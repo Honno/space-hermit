@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="CS2150"/>
+	<classpathentry kind="lib" path="LWJGL/jar/AppleJavaExtensions.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/asm-debug-all.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/jinput.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/lwjgl_test.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/lwjgl_util_applet.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/lwjgl-debug.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/lwjgl.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/lzma.jar"/>
+	<classpathentry kind="lib" path="LWJGL/jar/slick-util.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="CS2150"/>
+</classpath>
