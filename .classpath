@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="CS2150"/>
+	<classpathentry kind="src" path="CS2150">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/matthew/Projects/space-scene-coursework/LWJGL/native"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="LWJGL/jar/AppleJavaExtensions.jar"/>
 	<classpathentry kind="lib" path="LWJGL/jar/asm-debug-all.jar"/>
 	<classpathentry kind="lib" path="LWJGL/jar/jinput.jar"/>
