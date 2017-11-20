@@ -36,6 +36,8 @@ import GraphicsLab.*;
  */
 public class Scene extends GraphicsLab
 {
+	
+	private final int cockpitList = 1;
     private Cockpit cockpit;
 
     public static void main(String args[])
@@ -56,7 +58,7 @@ public class Scene extends GraphicsLab
         GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT,FloatBuffer.wrap(globalAmbient));
 
         // the first light for the scene is soft blue...
-        float diffuse0[]  = { 0.2f,  0.2f, 0.4f, 1.0f};
+        float diffuse0[]  = { 0.5f,  0.5f, 0.5f, 1.0f};
         // ...with a very dim ambient contribution...
         float ambient0[]  = { 0.05f,  0.05f, 0.05f, 1.0f};
         // ...and is positioned above the viewpoint
@@ -75,6 +77,9 @@ public class Scene extends GraphicsLab
         // ensure that all normals are re-normalised after transformations automatically
         GL11.glEnable(GL11.GL_NORMALIZE);
 
+        GL11.glNewList(cockpitList,GL11.GL_COMPILE);
+        cockpit.draw();
+        GL11.glEndList();
  
     }
     protected void checkSceneInput()
@@ -87,7 +92,7 @@ public class Scene extends GraphicsLab
     protected void renderScene()
     {
     	GL11.glPushMatrix();
-    	cockpit.draw();
+    	GL11.glCallList(cockpitList);
         GL11.glPopMatrix();
     }
     
