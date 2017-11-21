@@ -39,30 +39,32 @@ public class Scene extends GraphicsLab
 	
 	private final int cockpitList = 1;
     private Cockpit cockpit;
+    
+    private Texture starTextures;
 
     public static void main(String args[])
     {   
     	new Scene().run(WINDOWED,"Scene",0.01f);
     }
-    
-    public Scene() {
-    	cockpit = new Cockpit();
-    }
+
 
     protected void initScene() throws Exception
     {
+    	cockpit = new Cockpit();
 
+    	starTextures = loadTexture("SpaceHermit/textures/stars.bmp");
+    	
         // global ambient light level
         float globalAmbient[]   = {0.2f,  0.2f,  0.2f, 1.0f};
         // set the global ambient lighting
         GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT,FloatBuffer.wrap(globalAmbient));
 
         // the first light for the scene is soft blue...
-        float diffuse0[]  = { 0.5f,  0.5f, 0.5f, 1.0f};
+        float diffuse0[]  = { 0.2f,  0.2f, 0.4f, 1.0f};
         // ...with a very dim ambient contribution...
         float ambient0[]  = { 0.05f,  0.05f, 0.05f, 1.0f};
         // ...and is positioned above the viewpoint
-        float position0[] = { 0.0f, 10.0f, 0.0f, 1.0f};
+        float position0[] = { -4.0f, 12.0f, 0.0f, 0.5f};
 
         // supply OpenGL with the properties for the first light
         GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient0));
@@ -94,6 +96,10 @@ public class Scene extends GraphicsLab
     	GL11.glPushMatrix();
     	GL11.glCallList(cockpitList);
         GL11.glPopMatrix();
+        
+        GL11.glPushMatrix();
+    	drawBackground();
+        GL11.glPopMatrix();
     }
     
     protected void cleanupScene()
@@ -104,6 +110,71 @@ public class Scene extends GraphicsLab
     {
         
     }
+    
+    private void drawBackground() {
+        // disable lighting calculations so that they don't affect
+        // the appearance of the texture 
+        GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        // change the geometry colour to white so that the texture
+        // is bright and details can be seen clearly
+        Colour.WHITE.submit();
+        // enable texturing and bind an appropriate texture
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D,starTextures.getTextureID());
+        
+        // position, scale and draw the back plane
+        GL11.glTranslatef(0.0f,0.0f,-128.0f);
+        GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+        GL11.glScaled(64.0f, 64.0f, 1.0f);
+        Vertex v1 = new Vertex(-0.5f, 0.0f,-0.5f); // left,  back
+        Vertex v2 = new Vertex( 0.5f, 0.0f,-0.5f); // right, back
+        Vertex v3 = new Vertex( 0.5f, 0.0f, 0.5f); // right, front
+        Vertex v4 = new Vertex(-0.5f, 0.0f, 0.5f); // left,  front
+        
+        // draw the plane geometry. order the vertices so that the plane faces up
+        GL11.glBegin(GL11.GL_POLYGON);
+        {
+            new Normal(v4.toVector(),v3.toVector(),v2.toVector(),v1.toVector()).submit();
+            
+            GL11.glTexCoord2f(0.0f,0.0f);
+            v4.submit();
+            
+            GL11.glTexCoord2f(1.0f,0.0f);
+            v3.submit();
+            
+            GL11.glTexCoord2f(1.0f,1.0f);
+            v2.submit();
+            
+            GL11.glTexCoord2f(0.0f,1.0f);
+            v1.submit();
+        }
+        GL11.glEnd();
+        
+        // if the user is viewing an axis, then also draw this plane
+        // using lines so that axis aligned planes can still be seen
+        if(isViewingAxis())
+        {
+            // also disable textures when drawing as lines
+            // so that the lines can be seen more clearly
+            GL11.glPushAttrib(GL11.GL_TEXTURE_2D);
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            GL11.glBegin(GL11.GL_LINE_LOOP);
+            {
+                v4.submit();
+                v3.submit();
+                v2.submit();
+                v1.submit();
+            }
+            GL11.glEnd();
+            GL11.glPopAttrib();
+        }
+        
+        // disable textures and reset any local lighting changes
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glPopAttrib();
+    }
+    
     /**
      * Draws a cube of unit length, width and height using the current OpenGL material settings
      */
