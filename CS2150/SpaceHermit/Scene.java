@@ -64,7 +64,7 @@ public class Scene extends GraphicsLab
         // ...with a very dim ambient contribution...
         float ambient0[]  = { 0.05f,  0.05f, 0.05f, 1.0f};
         // ...and is positioned above the viewpoint
-        float position0[] = { -4.0f, 12.0f, 0.0f, 0.5f};
+        float position0[] = {0.0f, -12.0f, 32.0f, 0.5f};
 
         // supply OpenGL with the properties for the first light
         GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient0));
