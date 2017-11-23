@@ -60,11 +60,11 @@ public class Scene extends GraphicsLab
         GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT,FloatBuffer.wrap(globalAmbient));
 
         // the first light for the scene is soft blue...
-        float diffuse0[]  = { 0.2f,  0.2f, 0.4f, 1.0f};
+        float diffuse0[]  = {0.25f,  0.25f, 0.5f, 1.0f};
         // ...with a very dim ambient contribution...
-        float ambient0[]  = { 0.05f,  0.05f, 0.05f, 1.0f};
+        float ambient0[]  = {0.1f,  0.1f, 0.1f, 1.0f};
         // ...and is positioned above the viewpoint
-        float position0[] = {0.0f, -12.0f, 32.0f, 0.5f};
+        float position0[] = {0.0f, -8.0f, 32.0f, 0.5f};
 
         // supply OpenGL with the properties for the first light
         GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient0));

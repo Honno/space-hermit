@@ -8,9 +8,9 @@ import GraphicsLab.Vertex;
 
 public class Cockpit {
 	
-    private float frameShininess  = 2f;
+    private float frameShininess  = 1f;
     private float frameSpecular[] = {0.75f, 0.75f, 0.75f, 1.0f};
-    private float frameDiffuse[]  = {0f, 0f, 0f, 1.0f};
+    private float frameDiffuse[]  = {0.5f, 0.5f, 0.5f, 1.0f};
 	
 
 	
@@ -88,7 +88,7 @@ public class Cockpit {
         Vertex v17d = new Vertex(middleXMod*frontHeight, frontWidth - displaceY + middleY + frontWidth2 +frontWidth, -middleZMod*frontDist+frontWidth);
         
         // top
-        float topY = 8f;
+        float topY = 0f;
         float topXMod = 1.5f;
         
         Vertex v19 = new Vertex(-topXMod*frontHeight, frontWidth - displaceY + middleY + topY, 0);
@@ -112,11 +112,11 @@ public class Cockpit {
         // middle-front
         float middleFrontY = 20f;
         float middleFrontHeight = 6f;
-        float middleFrontZMod = 0.8f;
+        float middleFrontZMod = 0.75f;
         
         Vertex v25 = new Vertex(-middleFrontHeight, -frontWidth - displaceY + middleFrontY, -middleFrontZMod*frontDist); // bottom left
-        Vertex v26 = new Vertex(-middleFrontHeight, frontWidth - displaceY + middleFrontY, -middleFrontZMod*frontDist+frontWidth2); // top left
-        Vertex v27 = new Vertex(middleFrontHeight, frontWidth - displaceY + middleFrontY, -middleFrontZMod*frontDist+frontWidth2); // top right
+        Vertex v26 = new Vertex(-middleFrontHeight, frontWidth - displaceY + middleFrontY, -middleFrontZMod*frontDist+frontWidth); // top left
+        Vertex v27 = new Vertex(middleFrontHeight, frontWidth - displaceY + middleFrontY, -middleFrontZMod*frontDist+frontWidth); // top right
         Vertex v28 = new Vertex(middleFrontHeight, -frontWidth - displaceY + middleFrontY, -middleFrontZMod*frontDist); // bottom right
         
         Vertex v26d = new Vertex(-middleFrontHeight, frontWidth - displaceY + middleFrontY + frontWidth, -middleFrontZMod*frontDist+frontWidth2-frontWidth);
