@@ -3,6 +3,7 @@ package SpaceHermit;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import GraphicsLab.Colour;
 import GraphicsLab.FloatBuffer;
 import GraphicsLab.Normal;
 import GraphicsLab.Vertex;
@@ -50,15 +51,11 @@ public class Cockpit {
     private float buttonDepth = 8*buttonHeight;
     private float buttonExtendX = 2*buttonHeight;
     
-    private float buttonYMod = frontWidth;
-    private float buttonYMid = -frontWidth - displaceY;
+    private float buttonY = -frontWidth - displaceY;
     private float buttonZMod = 0.5f;
-    //private float buttonZMin = -frontDist*buttonBaseMod-buttonZMod*buttonBaseHeight;
-    //private float buttonZMax = -frontDist*buttonBaseMod+buttonZMod*buttonBaseHeight;
     private float buttonZMid = -frontDist*buttonBaseMod;
     private float buttonRotationMod = 30.0f;
     
-    private float buttonY;
     private float buttonZ;
     private float buttonRotation;
     
@@ -167,8 +164,7 @@ public class Cockpit {
     private Vertex vb7d = new Vertex(buttonHeight+buttonExtendX, buttonDepth+buttonHeight, buttonHeight-buttonHeight*2); // top left ins
     
     public Cockpit() {
-    	buttonY = buttonYMid - buttonYMod;
-    	buttonZ = buttonZMid+buttonZMod*buttonBaseHeight;
+    	buttonZ = buttonZMid+buttonZMod;
     	buttonRotation = 30.0f;
     }
     
@@ -184,9 +180,6 @@ public class Cockpit {
         	float ratio = (float) warpingTickCount / (float) warpingTickLimit;
         	float mod = cos(ratio);
         	
-        	System.out.println(ratio + " -> " + mod);
-        	
-        	buttonY = buttonYMid - mod*buttonYMod;
         	buttonZ = buttonZMid + mod*buttonZMod;
         	buttonRotation = mod*buttonRotationMod;
         	
@@ -315,9 +308,9 @@ public class Cockpit {
 	
 	public void drawButton() {
 		/** set material properties **/
-        float shininess  = 1f;
-        float specular[] = {1.0f, 0.0f, 0.0f, 1.0f};
-        float diffuse[]  = {0.0f, 0.0f, 0.0f, 0.0f};
+        float shininess  = 0.0f;
+        float[] specular = {1.0f, 0.0f, 0.0f, 1.0f};
+        float[] diffuse  = {1.0f, 0.0f, 0.0f, 1.0f};
         
         GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shininess);
         GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR, FloatBuffer.wrap(specular));
