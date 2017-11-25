@@ -64,7 +64,7 @@ public class Scene extends GraphicsLab
         // ...with a very dim ambient contribution...
         float ambient0[]  = {0.1f,  0.1f, 0.1f, 1.0f};
         // ...and is positioned above the viewpoint
-        float position0[] = {0.0f, -8.0f, 32.0f, 0.5f};
+        float position0[] = {0.0f, 8.0f, 0.0f, 1.0f};
 
         // supply OpenGL with the properties for the first light
         GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient0));
@@ -78,23 +78,19 @@ public class Scene extends GraphicsLab
         GL11.glEnable(GL11.GL_LIGHTING);
         // ensure that all normals are re-normalised after transformations automatically
         GL11.glEnable(GL11.GL_NORMALIZE);
-
-        GL11.glNewList(cockpitList,GL11.GL_COMPILE);
-        cockpit.draw();
-        GL11.glEndList();
  
     }
-    protected void checkSceneInput()
-    {
+    protected void checkSceneInput() {
+    	cockpit.checkSceneInput();
     }
     protected void updateScene()
     {
-        
+        cockpit.updateScene();
     }
     protected void renderScene()
     {
     	GL11.glPushMatrix();
-    	GL11.glCallList(cockpitList);
+    	cockpit.renderScene();
         GL11.glPopMatrix();
         
         GL11.glPushMatrix();
