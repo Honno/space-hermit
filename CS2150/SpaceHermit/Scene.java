@@ -8,6 +8,12 @@
  *  +-- 
  */
 package SpaceHermit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Sphere;
 import org.lwjgl.util.glu.Cylinder;
@@ -36,11 +42,28 @@ import GraphicsLab.*;
  */
 public class Scene extends GraphicsLab
 {
+	private Random rnd = new Random();
 	
-	private final int cockpitList = 1;
+	private boolean warping = false;
+	private int stallTickLimit = 20;
+	private int fadeInTickLimit = 20;
+	private int warpingTickLimit = 100;
+	private int fadeOutTickLimit = fadeInTickLimit;
+	private int tick = 0;
+	private char mode = 'n';
+	
+	float[] globalAmbient = {0.125f, 0.125f,  0.125f, 1.0f};
+	float[] currentAmbient = globalAmbient;
+	
     private Cockpit cockpit;
     
-    private Texture starTextures;
+    private String pckgDir = "SpaceHermit";
+    private String skyboxDir = "skyboxes";
+    private String[] skyboxNames = {"corona_ft.png", "redeclipse_ft.png", "unnamedspace_ft.jpg", "unnamedspace3_ft.png"};
+    private List<Texture> skyboxes;
+    
+    private Texture currentSkybox;
+    private int currentSkyboxIndex = -1;
 
     public static void main(String args[])
     {   
@@ -52,16 +75,12 @@ public class Scene extends GraphicsLab
     {
     	cockpit = new Cockpit();
 
-    	starTextures = loadTexture("SpaceHermit/textures/stars.bmp");
-    	
-        // global ambient light level
-        float globalAmbient[]   = {0.125f, 0.125f,  0.125f, 1.0f};
-        // set the global ambient lighting
-        GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT,FloatBuffer.wrap(globalAmbient));
+    	skyboxes = loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
+    	newSkybox();
         
-        float ambient0[]  = {1.0f,  1.0f, 1.0f, 1.0f};
+        float ambient0[]  = {0.0625f,  0.0625f, 0.0625f, 1.0f};
         float diffuse0[]  = {0.125f,  0.125f, 0.25f, 1.0f};
-        float position0[] = {0.0f, 16.0f, -16.0f, 1.0f};
+        float position0[] = {-8.0f, 16.0f, -16.0f, 1.0f};
 
         // supply OpenGL with the properties for the first light
         GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient0));
@@ -82,17 +101,69 @@ public class Scene extends GraphicsLab
     }
     protected void updateScene()
     {
-        cockpit.updateScene();
+    	if(!warping) {
+    		warping = cockpit.updateScene(warping);
+    		if(warping) {
+    			mode = 's';
+    		}
+    	} else {
+    		switch(mode) {
+    			case 's':
+    				if(tick > stallTickLimit) {
+    					mode = 'i';
+    					tickReset();
+    					// init warp
+    					
+    				} else {
+    					tick++;
+    				}
+    				break;
+    			case 'i':
+    				if(tick > fadeInTickLimit) {
+    					mode = 'w';
+    					tickReset();
+    					newSkybox();
+    				} else {
+    					tick++;
+    				}
+    				break;
+    			case 'w':
+    				if(tick > warpingTickLimit) {
+    					mode = 'o';
+    					tickReset();
+    				} else {
+    					tick++;
+    				}
+    			case 'o':
+    				if(tick > fadeOutTickLimit) {
+    					mode = 'n';
+    					warping = false;
+    					tickReset();
+    				} else {
+    					tick++;
+    				}
+    				break;
+    			default:
+    				warping = false;
+    				break;
+    				
+    		}
+    	}
     }
     protected void renderScene()
     {
+        // set the global ambient lighting
+        GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT,FloatBuffer.wrap(currentAmbient));
+    	
+    	GL11.glPushMatrix();
+    	drawBackground(currentSkybox);
+        GL11.glPopMatrix();
+    	
     	GL11.glPushMatrix();
     	cockpit.renderScene();
         GL11.glPopMatrix();
         
-        GL11.glPushMatrix();
-    	drawBackground();
-        GL11.glPopMatrix();
+        
     }
     
     protected void cleanupScene()
@@ -104,7 +175,22 @@ public class Scene extends GraphicsLab
         
     }
     
-    private void drawBackground() {
+    private List<Texture> loadTextures(String dir, String[] names) {
+    	List<Texture> textures = new ArrayList<Texture>();
+    	Pattern ext = Pattern.compile("\\.(.+)");
+    	for(String name: names) {
+    		try {
+    			Matcher match = ext.matcher(name);
+    			match.find();
+				textures.add(loadTexture(dir + "/" + name, match.group(1).toUpperCase()));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	}
+    	return textures;
+    }
+    
+    private void drawBackground(Texture texture) {
         // disable lighting calculations so that they don't affect
         // the appearance of the texture 
         GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
@@ -114,145 +200,39 @@ public class Scene extends GraphicsLab
         Colour.WHITE.submit();
         // enable texturing and bind an appropriate texture
         GL11.glEnable(GL11.GL_TEXTURE_2D);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D,starTextures.getTextureID());
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D,texture.getTextureID());
         
         // position, scale and draw the back plane
-        GL11.glTranslatef(0.0f,0.0f,-128.0f);
-        GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-        GL11.glScaled(64.0f, 64.0f, 1.0f);
-        Vertex v1 = new Vertex(-0.5f, 0.0f,-0.5f); // left,  back
-        Vertex v2 = new Vertex( 0.5f, 0.0f,-0.5f); // right, back
-        Vertex v3 = new Vertex( 0.5f, 0.0f, 0.5f); // right, front
-        Vertex v4 = new Vertex(-0.5f, 0.0f, 0.5f); // left,  front
+        float bgHeight = 48.0f;
+        float bgZ = 64.0f;
+        
+        Vertex v1 = new Vertex(-bgHeight, -bgHeight, -bgZ); // bottom left
+        Vertex v2 = new Vertex(-bgHeight, bgHeight, -bgZ); // top left
+        Vertex v3 = new Vertex(bgHeight, bgHeight, -bgZ); // top right
+        Vertex v4 = new Vertex(bgHeight, -bgHeight, -bgZ); // bottom right
         
         // draw the plane geometry. order the vertices so that the plane faces up
-        GL11.glBegin(GL11.GL_POLYGON);
-        {
-            new Normal(v4.toVector(),v3.toVector(),v2.toVector(),v1.toVector()).submit();
-            
-            GL11.glTexCoord2f(0.0f,0.0f);
-            v4.submit();
-            
-            GL11.glTexCoord2f(1.0f,0.0f);
-            v3.submit();
-            
-            GL11.glTexCoord2f(1.0f,1.0f);
-            v2.submit();
-            
-            GL11.glTexCoord2f(0.0f,1.0f);
-            v1.submit();
-        }
-        GL11.glEnd();
-        
-        // if the user is viewing an axis, then also draw this plane
-        // using lines so that axis aligned planes can still be seen
-        if(isViewingAxis())
-        {
-            // also disable textures when drawing as lines
-            // so that the lines can be seen more clearly
-            GL11.glPushAttrib(GL11.GL_TEXTURE_2D);
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glBegin(GL11.GL_LINE_LOOP);
-            {
-                v4.submit();
-                v3.submit();
-                v2.submit();
-                v1.submit();
-            }
-            GL11.glEnd();
-            GL11.glPopAttrib();
-        }
+        Util.drawRect(v4, v3, v2, v1);
         
         // disable textures and reset any local lighting changes
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glPopAttrib();
     }
     
-    /**
-     * Draws a cube of unit length, width and height using the current OpenGL material settings
-     */
-    private void drawUnitCube()
-    {
-        // the vertices for the cube (note that all sides have a length of 1)
-        Vertex v1 = new Vertex(-0.5f, -0.5f,  0.5f);
-        Vertex v2 = new Vertex(-0.5f,  0.5f,  0.5f);
-        Vertex v3 = new Vertex( 0.5f,  0.5f,  0.5f);
-        Vertex v4 = new Vertex( 0.5f, -0.5f,  0.5f);
-        Vertex v5 = new Vertex(-0.5f, -0.5f, -0.5f);
-        Vertex v6 = new Vertex(-0.5f,  0.5f, -0.5f);
-        Vertex v7 = new Vertex( 0.5f,  0.5f, -0.5f);
-        Vertex v8 = new Vertex( 0.5f, -0.5f, -0.5f);
-
-        // draw the near face:
-        GL11.glBegin(GL11.GL_POLYGON);
-        {
-            new Normal(v3.toVector(),v2.toVector(),v1.toVector(),v4.toVector()).submit();
-            
-            v3.submit();
-            v2.submit();
-            v1.submit();
-            v4.submit();
-        }
-        GL11.glEnd();
-
-        // draw the left face:
-        GL11.glBegin(GL11.GL_POLYGON);
-        {
-            new Normal(v2.toVector(),v6.toVector(),v5.toVector(),v1.toVector()).submit();
-            
-        	v2.submit();
-            v6.submit();
-            v5.submit();
-            v1.submit();
-        }
-        GL11.glEnd();
-
-        // draw the right face:
-        GL11.glBegin(GL11.GL_POLYGON);
-        {
-            new Normal(v7.toVector(),v3.toVector(),v4.toVector(),v8.toVector()).submit();
-            
-            v7.submit();
-            v3.submit();
-            v4.submit();
-            v8.submit();
-        }
-        GL11.glEnd();
-
-        // draw the top face:
-        GL11.glBegin(GL11.GL_POLYGON);
-        {
-            new Normal(v7.toVector(),v6.toVector(),v2.toVector(),v3.toVector()).submit();
-            
-            v7.submit();
-            v6.submit();
-            v2.submit();
-            v3.submit();
-        }
-        GL11.glEnd();
-
-        // draw the bottom face:
-        GL11.glBegin(GL11.GL_POLYGON);
-        {
-            new Normal(v4.toVector(),v1.toVector(),v5.toVector(),v8.toVector()).submit();
-            
-            v4.submit();
-            v1.submit();
-            v5.submit();
-            v8.submit();
-        }
-        GL11.glEnd();
-
-        // draw the far face:
-        GL11.glBegin(GL11.GL_POLYGON);
-        {
-            new Normal(v6.toVector(),v7.toVector(),v8.toVector(),v5.toVector()).submit();
-            
-            v6.submit();
-            v7.submit();
-            v8.submit();
-            v5.submit();
-        }
-        GL11.glEnd();
+    private void newSkybox() {
+    	boolean found = false;
+    	int index = currentSkyboxIndex;
+    	while(!found) {
+    		index = rnd.nextInt(skyboxes.size());
+    		if(index != currentSkyboxIndex) {
+    			currentSkyboxIndex = index;
+    			found = true;
+    		}
+    	}
+    	currentSkybox = skyboxes.get(currentSkyboxIndex);
+    }
+    
+    private void tickReset() {
+    	tick = 0;
     }
 }

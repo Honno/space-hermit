@@ -9,9 +9,11 @@ import GraphicsLab.Normal;
 import GraphicsLab.Vertex;
 
 public class Cockpit {
-	private boolean warping = false;
-	private int warpingTickCount = 0;
-	private int warpingTickLimit = 200;
+	private int chargeTickLimit = 200;
+	private int dischargeTickLimit = chargeTickLimit;
+	private int tick = 0;
+	private char mode = 'n';
+	
 	
 	/** chasis variables **/
     private float displaceY = 12f;
@@ -132,10 +134,10 @@ public class Cockpit {
 	
     // control board
     private Vertex v29 = new Vertex(-bottomXMod*frontHeight*controlMod, -frontWidth - displaceY - bottomY*controlMod, -frontDist*controlMod); // top left
-    private Vertex v30 = new Vertex(-bottomXMod*frontHeight*controlMod, -frontWidth - displaceY - bottomY*controlMod - frontWidth2, -frontDist*controlMod); // bottom left
+    private Vertex v30 = new Vertex(-bottomXMod*frontHeight*controlMod, -frontWidth - displaceY - bottomY*controlMod - frontWidth2*2f, -frontDist*controlMod); // bottom left
     
     private Vertex v31 = new Vertex(bottomXMod*frontHeight*controlMod, -frontWidth - displaceY - bottomY*controlMod, -frontDist*controlMod); // top right
-    private Vertex v32 = new Vertex(bottomXMod*frontHeight*controlMod, -frontWidth - displaceY - bottomY*controlMod - frontWidth2, -frontDist*controlMod); // bottom right
+    private Vertex v32 = new Vertex(bottomXMod*frontHeight*controlMod, -frontWidth - displaceY - bottomY*controlMod - frontWidth2*2f, -frontDist*controlMod); // bottom right
     
     // button base
     private Vertex v33 = new Vertex(-buttonBaseWidth, -frontWidth - displaceY - bottomY*buttonBaseMod, -frontDist*buttonBaseMod+buttonBaseHeight); // bottom left
@@ -168,32 +170,51 @@ public class Cockpit {
     	buttonRotation = 30.0f;
     }
     
+    public float getFronDist(){
+    	return frontDist;
+    }
+    
+    public float getDisplaceY() {
+    	return displaceY;
+    }
+    
     protected void checkSceneInput()
     {
-    	if(!warping) {
-    		warping = Keyboard.isKeyDown(Keyboard.KEY_SPACE);
+    	if(mode == 'n') {
+    		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
+    			mode = 'c';
+    		}
     	}
     }
-    protected boolean updateScene()
+    protected boolean updateScene(boolean stall)
     {
-        if(warping) {
-        	float ratio = (float) warpingTickCount / (float) warpingTickLimit;
-        	float mod = cos(ratio);
-        	
-        	buttonZ = buttonZMid + mod*buttonZMod;
-        	buttonRotation = mod*buttonRotationMod;
-        	
-        	if(warpingTickCount >= warpingTickLimit) {
-        		warpingTickCount = 0;
-        		warping = false;
-        	}
-        	
-        	warpingTickCount++;
-        	
-        	return true;
-        } else {
-        	return false;
-        }
+    	if(!stall) {
+    		switch(mode) {
+    			case 'c':
+		        	animButton(cos((float) tick / (float) chargeTickLimit));
+		        	if(tick > chargeTickLimit) {
+		        		mode = 'd';
+		        		tickReset();
+		        		return true;
+		        	} else {
+		        		tick++;
+		        	}
+		        	break;
+    			case 'd':
+    				animButton(cos((float) tick / (float) chargeTickLimit + 1));
+		        	if(tick > dischargeTickLimit) {
+		        		mode = 'n';
+		        		tickReset();
+		        		return false;
+		        	} else {
+		        		tick++;
+		        	}
+		        	break;
+    			default:
+    				break;
+    		}
+    	} 
+    	return stall;
     }
     
     public void renderScene() {
@@ -215,14 +236,11 @@ public class Cockpit {
 	
 	private void drawFrame() {
         /** set material properties **/
+        float shininess  = 1.0f;
+        float[] specular = {1.0f, 1.0f, 1.0f, 1.0f};
+        float[] colour  = {0.75f, 0.75f, 0.75f, 1.0f};
         
-        float shininess  = 0.5f;
-        float specular[] = {0.75f, 0.75f, 0.75f, 1.0f};
-        float diffuse[]  = {0.25f, 0.25f, 0.25f, 1.0f};
-        
-        GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shininess);
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR, FloatBuffer.wrap(specular));
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_DIFFUSE, FloatBuffer.wrap(diffuse));
+        Util.material(shininess, specular, colour);
         
         /** draw everything **/
         
@@ -257,14 +275,11 @@ public class Cockpit {
 	
 	public void drawFloor() {
         /** set material properties **/
+        float shininess  = 0.0f;
+        float[] specular = {0.5f, 0.0f, 0.0f, 1.0f};
+        float[] colour  = {0.625f, 0.75f, 0.625f, 1.0f};
         
-        float shininess  = 0.5f;
-        float specular[] = {0.75f, 0.75f, 0.75f, 1.0f};
-        float diffuse[]  = {0.25f, 0.25f, 0.25f, 1.0f};
-        
-        GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shininess);
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR, FloatBuffer.wrap(specular));
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_DIFFUSE, FloatBuffer.wrap(diffuse));
+        Util.material(shininess, specular, colour);
         
         /** draw everything **/
 		
@@ -275,13 +290,11 @@ public class Cockpit {
 	
 	public void drawControlBoard() {
 		/** set material properties **/
-        float shininess  = 0.5f;
-        float specular[] = {0.75f, 0.75f, 0.75f, 1.0f};
-        float diffuse[]  = {0.25f, 0.25f, 0.25f, 1.0f};
+		float shininess  = 1.0f;
+        float[] specular = {1.0f, 1.0f, 1.0f, 1.0f};
+        float[] colour  = {0.75f, 0.75f, 0.75f, 1.0f};
         
-        GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shininess);
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR, FloatBuffer.wrap(specular));
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_DIFFUSE, FloatBuffer.wrap(diffuse));
+        Util.material(shininess, specular, colour);
         
         /** draw everything **/
         Util.drawRect(v31, v4, v1, v29); // draw top
@@ -290,13 +303,13 @@ public class Cockpit {
 	
 	public void drawButtonBase() {
 		/** set material properties **/
-        float shininess  = 0.5f;
-        float specular[] = {0.75f, 0.75f, 0.75f, 1.0f};
-        float diffuse[]  = {0.25f, 0.25f, 0.25f, 1.0f};
+        float shininess  = 0.0f;
+        float[] specular = {0.125f, 0.125f, 0.125f, 1.0f};
+        float[] colour  = {0.3125f, 0.3125f, 0.3125f, 1.0f};
         
         GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shininess);
         GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR, FloatBuffer.wrap(specular));
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_DIFFUSE, FloatBuffer.wrap(diffuse));
+        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE, FloatBuffer.wrap(colour));
         
         /** draw everything **/
         //Util.drawRect(v36, v35, v34, v33); // draw bottom
@@ -309,12 +322,10 @@ public class Cockpit {
 	public void drawButton() {
 		/** set material properties **/
         float shininess  = 0.0f;
-        float[] specular = {1.0f, 0.0f, 0.0f, 1.0f};
-        float[] diffuse  = {1.0f, 0.0f, 0.0f, 1.0f};
+        float[] specular = {0.5f, 0.0f, 0.0f, 1.0f};
+        float[] colour  = {1.0f, 0.0f, 0.0f, 1.0f};
         
-        GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shininess);
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR, FloatBuffer.wrap(specular));
-        GL11.glMaterial(GL11.GL_FRONT, GL11.GL_DIFFUSE, FloatBuffer.wrap(diffuse));
+        Util.material(shininess, specular, colour);
         
         /** draw everything **/
         // draw top
@@ -322,6 +333,7 @@ public class Cockpit {
         
         // draw front
 		GL11.glBegin(GL11.GL_POLYGON);
+		new Normal(vb6.toVector(), vb1.toVector(), vb2.toVector(), vb7.toVector()).submit();
 		vb4.submit();
 		vb8.submit();
 		vb7.submit();
@@ -335,8 +347,17 @@ public class Cockpit {
 		Util.drawRect(vb7d, vb6d, vb6, vb7);
 	}
 	
+	public void animButton(float mod) {
+		buttonZ = buttonZMid + mod*buttonZMod;
+    	buttonRotation = mod*buttonRotationMod;
+	}
+	
 	public float cos(float ratio) {
-		double radians = ratio * 2 * Math.PI;
+		double radians = ratio * Math.PI;
 		return (float) Math.cos(radians);
+	}
+	
+	public void tickReset() {
+		tick = 0;
 	}
 }
