@@ -47,10 +47,11 @@ public class Scene extends GraphicsLab
 	private float aspect; 
 	
 	private boolean warping = false;
-	private int stallTickLimit = 20;
-	private int fadeInTickLimit = 200;
-	private int warpingTickLimit = 200;
-	private int fadeOutTickLimit = fadeInTickLimit;
+	private float stallTickLimit = 100 * getAnimationScale();
+	private float fadeInTickLimit = 50 * getAnimationScale();
+	private float warpingTickLimit = 25 * getAnimationScale();
+	private float fadeOutTickLimit = 50 * getAnimationScale();
+	private float endStallTickLimit = 150 * getAnimationScale();
 	private int tick = 0;
 	private char mode = 'n';
 	
@@ -59,10 +60,14 @@ public class Scene extends GraphicsLab
 	
 	float alpha = 0.0f;
 	
+	float povMax = 45.0f;
+	float povMin = 25.0f;
+	float pov = povMax;
+	
     private Cockpit cockpit;
     
-    float bgHeight = 48.0f;
-    float bgZ = 64.0f;
+    float bgHeight = 64.0f;
+    float bgZ = 96.0f;
     
     private String pckgDir = "SpaceHermit";
     private String skyboxDir = "skyboxes";
@@ -77,20 +82,19 @@ public class Scene extends GraphicsLab
     	new Scene().run(WINDOWED,"Scene",1.0f);
     }
 
-
     protected void initScene() throws Exception
     {
     	aspect = (float) displayMode.getWidth() / (float) displayMode.getHeight();
     	resetAmbient();
     	
-    	cockpit = new Cockpit();
+    	cockpit = new Cockpit(getAnimationScale());
 
     	skyboxes = loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
     	newSkybox();
         
         float ambient0[]  = {0.0625f,  0.0625f, 0.0625f, 1.0f};
         float diffuse0[]  = {0.125f,  0.125f, 0.25f, 1.0f};
-        float position0[] = {-8.0f, 16.0f, -16.0f, 1.0f};
+        float position0[] = {0.0f, 16.0f, -16.0f, 1.0f};
 
         // supply OpenGL with the properties for the first light
         GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient0));
@@ -111,40 +115,55 @@ public class Scene extends GraphicsLab
     }
     protected void updateScene()
     {
+    	float r; // ratio
     	if(!warping) {
-    		if(mode == 'o') {
-				float r = (float) tick/fadeOutTickLimit;
-				if(r >= 1) {
-					mode = 'n';
-					tickReset();
-					resetAmbient();
-				} else {
-					fadeOut(r);
-					tick++;
-				}
+    		switch(mode) {
+    			case 'o':
+    				r = getRatio(fadeOutTickLimit);
+    				if(r >= 1) {
+    					mode = 'e';
+    					tickReset();
+    					resetAmbient();
+    				} else {
+    					fadeOut(r);
+    					tick++;
+    				}
+    				break;
+    			case 'e': {
+    				r = getRatio(endStallTickLimit);
+    				if(r > 1) {
+    					pov = povMax;
+    					mode = 'n';
+    					tickReset();
+    				} else {
+    					tick++;
+    					pov = povMin + r * (povMax - povMin);
+    				}
+    				break;
+    			}
     		}
-    		warping = cockpit.updateScene(warping);
+    		
+    		warping = cockpit.updateScene(warping, getAnimationScale());
     		if(warping) {
     			mode = 's';
     			tickReset();
     		}
     		tick++;
     	} else {
-    		float r; // ratio
     		switch(mode) {
     			case 's': // stall
-    				r = (float) tick/stallTickLimit;
+    				r = getRatio(stallTickLimit);
     				if(r >= 1) {
+    					pov = povMin;
     					mode = 'i';
     					tickReset();
-    					// init warp
     					
     				} else {
     					tick++;
     				}
     				break;
     			case 'i': // fade in
-    				r = (float) tick/fadeInTickLimit;
+    				r = getRatio(fadeInTickLimit);
     				if(r >= 1) {
     					mode = 'w';
     					tickReset();
@@ -156,7 +175,7 @@ public class Scene extends GraphicsLab
     				}
     				break;
     			case 'w': // warping
-    				r = (float) tick/warpingTickLimit;
+    				r = getRatio(warpingTickLimit);
     				if(r >= 1) {
     					mode = 'o';
     					warping = false;
@@ -272,14 +291,12 @@ public class Scene extends GraphicsLab
     	tick = 0;
     }
     
+    private float getRatio(float tickLimit) {
+    	return (float) tick / tickLimit;
+    }
+    
     protected void setSceneCamera()
     {
-    	float pov;
-    	if(warping && mode != 's') {
-    		pov = 25.0f;
-    	} else {
-    		pov = 45.0f;
-    	}
         // default projection is a perspective projection with a 90 (45*2) degree field of view, width/height
         // aspect ratio and visible range of 0.1 to 100.0 scene units
         GL11.glMatrixMode(GL11.GL_PROJECTION);

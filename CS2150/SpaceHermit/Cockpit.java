@@ -3,14 +3,13 @@ package SpaceHermit;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import GraphicsLab.Colour;
 import GraphicsLab.FloatBuffer;
 import GraphicsLab.Normal;
 import GraphicsLab.Vertex;
 
 public class Cockpit {
-	private int chargeTickLimit = 100;
-	private int dischargeTickLimit = chargeTickLimit * 2;
+	private float chargeTickLimit = 100;
+	private float dischargeTickLimit = chargeTickLimit * 2;
 	private int tick = 0;
 	private char mode = 'n';
 	
@@ -165,9 +164,12 @@ public class Cockpit {
     private Vertex vb6d = new Vertex(-buttonHeight-buttonExtendX, buttonDepth+buttonHeight, buttonHeight-buttonHeight*2); // top left in
     private Vertex vb7d = new Vertex(buttonHeight+buttonExtendX, buttonDepth+buttonHeight, buttonHeight-buttonHeight*2); // top left ins
     
-    public Cockpit() {
+    public Cockpit(float animationScale) {
     	buttonZ = buttonZMid+buttonZMod;
     	buttonRotation = 30.0f;
+    	
+    	chargeTickLimit = chargeTickLimit * animationScale;
+    	dischargeTickLimit = dischargeTickLimit * animationScale;
     }
     
     public float getFronDist(){
@@ -186,12 +188,12 @@ public class Cockpit {
     		}
     	}
     }
-    protected boolean updateScene(boolean stall)
+    protected boolean updateScene(boolean stall, float animationScale)
     {
     	if(!stall) {
     		switch(mode) {
     			case 'c':
-		        	animButton(cos((float) tick / (float) chargeTickLimit));
+		        	animButton(cos((float) tick / chargeTickLimit));
 		        	if(tick > chargeTickLimit) {
 		        		mode = 'd';
 		        		tickReset();
@@ -201,7 +203,7 @@ public class Cockpit {
 		        	}
 		        	break;
     			case 'd':
-    				animButton(cos((float) tick / (float) dischargeTickLimit + 1));
+    				animButton(cos((float) tick / dischargeTickLimit + 1));
 		        	if(tick > dischargeTickLimit) {
 		        		mode = 'n';
 		        		tickReset();
@@ -344,8 +346,6 @@ public class Cockpit {
 		vb1.submit();
 		vb2.submit();
 		GL11.glEnd();
-		
-		Util.drawRect(vb7d, vb6d, vb6, vb7);
 	}
 	
 	public void animButton(float mod) {
