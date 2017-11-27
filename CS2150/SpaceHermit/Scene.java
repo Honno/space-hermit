@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.Sphere;
-import org.lwjgl.util.glu.Cylinder;
-import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.glu.GLU;
 import org.newdawn.slick.opengl.Texture;
+
+import com.sun.prism.paint.Color;
 
 import GraphicsLab.*;
 
@@ -44,18 +44,25 @@ public class Scene extends GraphicsLab
 {
 	private Random rnd = new Random();
 	
+	private float aspect; 
+	
 	private boolean warping = false;
 	private int stallTickLimit = 20;
-	private int fadeInTickLimit = 20;
-	private int warpingTickLimit = 100;
+	private int fadeInTickLimit = 200;
+	private int warpingTickLimit = 200;
 	private int fadeOutTickLimit = fadeInTickLimit;
 	private int tick = 0;
 	private char mode = 'n';
 	
-	float[] globalAmbient = {0.125f, 0.125f,  0.125f, 1.0f};
-	float[] currentAmbient = globalAmbient;
+	float globalAmbient = 0.125f;
+	float currentAmbient;
+	
+	float alpha = 0.0f;
 	
     private Cockpit cockpit;
+    
+    float bgHeight = 48.0f;
+    float bgZ = 64.0f;
     
     private String pckgDir = "SpaceHermit";
     private String skyboxDir = "skyboxes";
@@ -67,12 +74,15 @@ public class Scene extends GraphicsLab
 
     public static void main(String args[])
     {   
-    	new Scene().run(WINDOWED,"Scene",0.01f);
+    	new Scene().run(WINDOWED,"Scene",1.0f);
     }
 
 
     protected void initScene() throws Exception
     {
+    	aspect = (float) displayMode.getWidth() / (float) displayMode.getHeight();
+    	resetAmbient();
+    	
     	cockpit = new Cockpit();
 
     	skyboxes = loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
@@ -102,14 +112,29 @@ public class Scene extends GraphicsLab
     protected void updateScene()
     {
     	if(!warping) {
+    		if(mode == 'o') {
+				float r = (float) tick/fadeOutTickLimit;
+				if(r >= 1) {
+					mode = 'n';
+					tickReset();
+					resetAmbient();
+				} else {
+					fadeOut(r);
+					tick++;
+				}
+    		}
     		warping = cockpit.updateScene(warping);
     		if(warping) {
     			mode = 's';
+    			tickReset();
     		}
+    		tick++;
     	} else {
+    		float r; // ratio
     		switch(mode) {
-    			case 's':
-    				if(tick > stallTickLimit) {
+    			case 's': // stall
+    				r = (float) tick/stallTickLimit;
+    				if(r >= 1) {
     					mode = 'i';
     					tickReset();
     					// init warp
@@ -118,61 +143,53 @@ public class Scene extends GraphicsLab
     					tick++;
     				}
     				break;
-    			case 'i':
-    				if(tick > fadeInTickLimit) {
+    			case 'i': // fade in
+    				r = (float) tick/fadeInTickLimit;
+    				if(r >= 1) {
     					mode = 'w';
     					tickReset();
+    					fullBright();
     					newSkybox();
     				} else {
+    					fadeIn(r);
     					tick++;
     				}
     				break;
-    			case 'w':
-    				if(tick > warpingTickLimit) {
+    			case 'w': // warping
+    				r = (float) tick/warpingTickLimit;
+    				if(r >= 1) {
     					mode = 'o';
-    					tickReset();
-    				} else {
-    					tick++;
-    				}
-    			case 'o':
-    				if(tick > fadeOutTickLimit) {
-    					mode = 'n';
     					warping = false;
     					tickReset();
     				} else {
     					tick++;
     				}
     				break;
-    			default:
-    				warping = false;
-    				break;
-    				
     		}
     	}
     }
     protected void renderScene()
     {
         // set the global ambient lighting
-        GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT,FloatBuffer.wrap(currentAmbient));
+        GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT,FloatBuffer.wrap(new float[]{currentAmbient, currentAmbient, currentAmbient, 1.0f}));
     	
     	GL11.glPushMatrix();
     	drawBackground(currentSkybox);
         GL11.glPopMatrix();
-    	
+
     	GL11.glPushMatrix();
     	cockpit.renderScene();
         GL11.glPopMatrix();
+        
+        GL11.glPushMatrix();
+    	drawWhitePlane(alpha);
+    	GL11.glPopMatrix();
         
         
     }
     
     protected void cleanupScene()
     {// empty
-    }
-    
-    private void resetAnimations()
-    {
-        
     }
     
     private List<Texture> loadTextures(String dir, String[] names) {
@@ -201,11 +218,7 @@ public class Scene extends GraphicsLab
         // enable texturing and bind an appropriate texture
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D,texture.getTextureID());
-        
-        // position, scale and draw the back plane
-        float bgHeight = 48.0f;
-        float bgZ = 64.0f;
-        
+        // draw back plane
         Vertex v1 = new Vertex(-bgHeight, -bgHeight, -bgZ); // bottom left
         Vertex v2 = new Vertex(-bgHeight, bgHeight, -bgZ); // top left
         Vertex v3 = new Vertex(bgHeight, bgHeight, -bgZ); // top right
@@ -214,8 +227,31 @@ public class Scene extends GraphicsLab
         // draw the plane geometry. order the vertices so that the plane faces up
         Util.drawRect(v4, v3, v2, v1);
         
-        // disable textures and reset any local lighting changes
+        // disables textures and reset any local lighting changes
         GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glPopAttrib();
+    }
+    
+    private void drawWhitePlane(float alpha) {
+        // disable lighting calculations so that they don't affect
+        // the appearance of the plane
+        GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        // change the geometry colour to white
+        GL11.glColor4f(1.0f, 1.0f, 1.0f, alpha);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        // draw back plane to double display size to ensure screen is fully covered
+        Vertex v1 = new Vertex(-displayMode.getWidth(), -displayMode.getHeight(), -1.0f); // bottom left
+        Vertex v2 = new Vertex(-displayMode.getWidth(), displayMode.getHeight(), -1.0f); // top left
+        Vertex v3 = new Vertex(displayMode.getWidth(), displayMode.getHeight(), -1.0f); // top right
+        Vertex v4 = new Vertex(displayMode.getWidth(), -displayMode.getHeight(), -1.0f); // bottom right
+        
+        // draw the plane geometry. order the vertices so that the plane faces up
+        Util.drawRect(v4, v3, v2, v1);
+        
+        // reset any local lighting changes
+        GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopAttrib();
     }
     
@@ -234,5 +270,44 @@ public class Scene extends GraphicsLab
     
     private void tickReset() {
     	tick = 0;
+    }
+    
+    protected void setSceneCamera()
+    {
+    	float pov;
+    	if(warping && mode != 's') {
+    		pov = 25.0f;
+    	} else {
+    		pov = 45.0f;
+    	}
+        // default projection is a perspective projection with a 90 (45*2) degree field of view, width/height
+        // aspect ratio and visible range of 0.1 to 100.0 scene units
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glLoadIdentity();
+        GLU.gluPerspective(pov,aspect,0.1f,100.0f);
+
+        // default viewpoint is positioned at the scene origin facing along the negative Z axis
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glLoadIdentity();
+    }
+    
+    private void fadeIn(float ratio) {
+    	currentAmbient = ratio * (1.0f - globalAmbient) + globalAmbient;
+    	alpha = ratio;
+    }
+    
+    private void fadeOut(float ratio) {
+    	currentAmbient = 1.0f - ratio * (1.0f - globalAmbient);
+    	alpha = 1 - ratio;
+    }
+    
+    private void fullBright() {
+    	currentAmbient = 1.0f;
+    	alpha = 1.0f;
+    }
+    
+    private void resetAmbient() {
+    	currentAmbient = globalAmbient;
+    	alpha = 0.0f;
     }
 }

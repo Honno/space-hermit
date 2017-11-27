@@ -9,8 +9,8 @@ import GraphicsLab.Normal;
 import GraphicsLab.Vertex;
 
 public class Cockpit {
-	private int chargeTickLimit = 200;
-	private int dischargeTickLimit = chargeTickLimit;
+	private int chargeTickLimit = 100;
+	private int dischargeTickLimit = chargeTickLimit * 2;
 	private int tick = 0;
 	private char mode = 'n';
 	
@@ -201,7 +201,7 @@ public class Cockpit {
 		        	}
 		        	break;
     			case 'd':
-    				animButton(cos((float) tick / (float) chargeTickLimit + 1));
+    				animButton(cos((float) tick / (float) dischargeTickLimit + 1));
 		        	if(tick > dischargeTickLimit) {
 		        		mode = 'n';
 		        		tickReset();
@@ -211,6 +211,7 @@ public class Cockpit {
 		        	}
 		        	break;
     			default:
+    				mode = 'n';
     				break;
     		}
     	} 
