@@ -55,7 +55,7 @@ public class Scene extends GraphicsLab {
 
 	// declare warp animation variables
 	private boolean warping = false; // whether the user is warping
-	private char mode = 'n'; // current mode in animation, 'n' is the default mode
+	private char mode = 'd'; // current mode in animation, 'd' is the default mode
 	
 	private int tick = 0;
 	private float stallTickLimit = 100 * getAnimationScale(); // 's' mode, before actual warp begins
@@ -146,32 +146,35 @@ public class Scene extends GraphicsLab {
 			switch (mode) {
 			case 'o':
 				ratio = getRatio(fadeOutTickLimit);
-				if (ratio >= 1) {
+				if (ratio > 1) {
 					// if fade out has ended, change mode to end stall
 					mode = 'e';
 					tickReset();
 					// sets global ambient lighting to it's default value
 					resetAmbient();
 				} else {
-					// 
+					// else gradually decrease global ambience and alpha of white screen
 			    	currentAmbient = 1.0f - ratio * (1.0f - globalAmbient);
 			    	alpha = 1.0f - ratio;
 				}
 				break;
-			case 'e': {
+			case 'e': 
 				ratio = getRatio(endStallTickLimit);
 				if (ratio > 1) {
-					pov = povMax;
-					mode = 'n';
+					// if end stall has ended, change to default mode
+					mode = 'd';
 					tickReset();
+					// reset pov to default value
+					pov = povMax;
 				} else {
+					// gradually increase pov to default value
 					pov = povMin + ratio * (povMax - povMin);
 				}
 				break;
-			}
+			
 			}
 
-			// updates cockpit, value returned tells scene whetheratio warping has been activated
+			// updates cockpit, value returned tells scene whether warping has been activated
 			warping = cockpit.updateScene(warping);
 			
 			// if warp has been activated then change mode to start stall
@@ -184,21 +187,23 @@ public class Scene extends GraphicsLab {
 			switch (mode) {
 			case 's': // stall
 				ratio = getRatio(stallTickLimit);
-				if (ratio >= 1) {
-					pov = povMin;
+				if (ratio > 1) {
+					// if start stall has ended,
 					mode = 'i';
 					tickReset();
+					pov = povMin;
 				}
 				break;
 			case 'i': // fade in
 				ratio = getRatio(fadeInTickLimit);
-				if (ratio >= 1) {
+				if (ratio > 1) {
 					mode = 'w';
 					tickReset();
 					currentAmbient = 1.0f;
 					alpha = 1.0f;
 					newSkybox();
 				} else {
+					// increase global ambience and alpha of white screen
 					currentAmbient = ratio * (1.0f - globalAmbient) + globalAmbient;
 					alpha = ratio;
 				}
