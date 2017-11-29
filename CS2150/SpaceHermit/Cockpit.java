@@ -37,7 +37,7 @@ public class Cockpit {
 	private float topY = 0f;
 	private float topXMod = 1.5f;
 	// floor properties
-	private float floorY = -20f;
+	private float floorY = -24f;
 	private float floorHeight = 6f;
 	private float floorZMod = 0.5f;
 	// bar that bridges top bar properties
@@ -286,10 +286,15 @@ public class Cockpit {
 	private Vertex v40 = new Vertex(buttonBaseTopTotalX, buttonBaseTopTotalY,
 			buttonBaseTotalZ + buttonBaseHeight);
 
+	/**
+	 * Construct cockpit with default values for button properties, and modify tick limits to adjust with the animation scale.
+	 * @param animationScale the animation scale desired by the instantiating class
+	 */
 	public Cockpit(float animationScale) {
+		/* set default values for button position */
 		buttonZ = buttonZMid + buttonZMod;
 		buttonRotation = 30.0f;
-
+		/* modify tick limits with animation scale */
 		chargeTickLimit = chargeTickLimit * animationScale;
 		restTickLimit = restTickLimit * animationScale;
 	}
@@ -302,6 +307,9 @@ public class Cockpit {
 		return displaceY;
 	}
 
+	/**
+	 * If in the default animation mode, check whether user has press the space bar to active the lever charge and subsequently the warp protocol.
+	 */
 	protected void checkSceneInput() {
 		if (mode == 'd') {
 			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
@@ -310,8 +318,12 @@ public class Cockpit {
 		}
 	}
 
+	/**
+	 * @return boolean value that tells the instantiating class that the warp protocol has been activated.
+	 */
 	protected boolean updateScene() {
-		if (mode == 'c') {
+		switch (mode) {
+		case 'c':
 			animButton(cos((float) tick / chargeTickLimit));
 			if (tick > chargeTickLimit) {
 				mode = 'r';
@@ -320,8 +332,8 @@ public class Cockpit {
 			} else {
 				tick++;
 			}
-
-		} else if (mode == 'r') {
+			break;
+		case 'r':
 			animButton(cos((float) tick / restTickLimit + 1));
 			if (tick > restTickLimit) {
 				mode = 'd';
@@ -329,6 +341,7 @@ public class Cockpit {
 			} else {
 				tick++;
 			}
+			break;
 		}
 		return false;
 	}
