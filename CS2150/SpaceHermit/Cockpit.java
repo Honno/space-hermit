@@ -8,110 +8,134 @@ import GraphicsLab.Normal;
 import GraphicsLab.Vertex;
 
 public class Cockpit {
-	private float chargeTickLimit = 100;
-	private float dischargeTickLimit = chargeTickLimit * 4;
+	/* declare lever animation variables */
+	// current mode in animation, 'd' is the default mode
+	private char mode = 'd';
+	// the tick counter for the current animation mode
 	private int tick = 0;
-	private char mode = 'n';
-
-	/** chasis variables **/
+	// 'c' mode, how long it takes the lever to charge up
+	private float chargeTickLimit = 100;
+	// 'r' mode, how long it takes the lever to return to it's rest position
+	private float restTickLimit = chargeTickLimit * 4;
+	
+	/* declare chasis variables */
+	// the y displacement of the whole cockpit
 	private float displaceY = 12f;
-
+	// front properties
 	private float frontDist = 64f;
 	private float frontWidth = 0.5f;
 	private float frontWidth2 = 2 * frontWidth;
 	private float frontHeight = 12f;
-
+	// side bars properties
 	private float bottomY = 0.0f;
 	private float bottomXMod = 1.5f;
-
+	// middle bars properties
 	private float middleY = 16f;
 	private float middleXMod = 1.25f;
 	private float middleZMod = 0.75f;
-
+	// top bars describing
 	private float topY = 0f;
 	private float topXMod = 1.5f;
-
+	// floor properties
 	private float floorY = 20f;
 	private float floorHeight = 6f;
 	private float floorZMod = 0.5f;
-
+	// bar that bridges top bar properties
 	private float middleFrontY = 20f;
 	private float middleFrontHeight = 6f;
 	private float middleFrontZMod = 0.75f;
-
+	// control board properties
 	private float controlMod = 0.75f;
-
+	// button base properties
 	private float buttonBaseHeight = 4f;
 	private float buttonBaseWidth = 2f;
 	private float buttonBaseDepth = 0.5f;
 	private float buttonBaseInwardMod = 0.75f;
 	private float buttonBaseMod = 0.85f;
-
+	// button properties
 	private float buttonHeight = 0.1f * buttonBaseHeight;
 	private float buttonDepth = 8 * buttonHeight;
 	private float buttonExtendX = 2 * buttonHeight;
-
 	private float buttonY = -frontWidth - displaceY;
 	private float buttonZMod = 0.5f;
 	private float buttonZMid = -frontDist * buttonBaseMod;
 	private float buttonRotationMod = 30.0f;
-
 	private float buttonZ;
 	private float buttonRotation;
 
-	/** define vertexes **/
-	// front
+	/* declare vertexes of cockpit 
+	 * letter 'd' stands for a literal "in-depth" version of a vertex, used to make everything look 3D
+	 * */
+	/* front bar vertexes */
+	// bottom left
 	private Vertex v1 = new Vertex(-frontHeight, -frontWidth - displaceY,
-			-frontDist); // bottom left
+			-frontDist); 
+	// top left
 	private Vertex v2 = new Vertex(-frontHeight, frontWidth - displaceY,
-			-frontDist); // top left
+			-frontDist); 
+	// top right
 	private Vertex v3 = new Vertex(frontHeight, frontWidth - displaceY,
-			-frontDist); // top right
+			-frontDist); 
+	// bottom right
 	private Vertex v4 = new Vertex(frontHeight, -frontWidth - displaceY,
-			-frontDist); // bottom right
+			-frontDist); 
 
 	private Vertex v2d = new Vertex(-frontHeight - frontWidth, frontWidth
 			- displaceY, -frontDist - frontWidth2);
 	private Vertex v3d = new Vertex(frontHeight + frontWidth, frontWidth
 			- displaceY, -frontDist - frontWidth2);
 
-	// bottom
-	private Vertex v5 = new Vertex(-bottomXMod * frontHeight, frontWidth
-			- displaceY - bottomY, 0);
-	private Vertex v6 = new Vertex(-bottomXMod * frontHeight, -frontWidth
-			- displaceY - bottomY, 0);
+	/* side bars vertexes */
+	// calculate total displace of side bars
+	private float bottomTotalY = displaceY + bottomY;
+	
+	// top left
+	private Vertex v5 = new Vertex(-bottomXMod * frontHeight, frontWidth -
+			bottomTotalY, 0);
+	// bottom left
+	private Vertex v6 = new Vertex(-bottomXMod * frontHeight, -frontWidth -
+			bottomTotalY, 0);
 
 	private Vertex v5d = new Vertex(-bottomXMod * frontHeight - frontWidth2,
-			frontWidth - displaceY - bottomY, 0);
+			frontWidth - bottomTotalY, 0);
 
+	// top right
 	private Vertex v7 = new Vertex(bottomXMod * frontHeight, frontWidth
-			- displaceY - bottomY, 0);
+			- bottomTotalY, 0);
+	// bottom right
 	private Vertex v8 = new Vertex(bottomXMod * frontHeight, -frontWidth
-			- displaceY - bottomY, 0);
+			- bottomTotalY, 0);
 
 	private Vertex v7d = new Vertex(bottomXMod * frontHeight + frontWidth2,
-			frontWidth - displaceY - bottomY, 0);
+			frontWidth - bottomTotalY, 0);
 
-	// middle
+	/* middle bars vertexes */
+	private float middleTotalY = frontWidth - displaceY + middleY;
+	
+	// bottom left inward
 	private Vertex v9 = new Vertex(-frontHeight + frontWidth2, frontWidth
 			- displaceY, -frontDist);
+	// top left inward
 	private Vertex v10 = new Vertex(-middleXMod * frontHeight + frontWidth2,
-			frontWidth - displaceY + middleY, -middleZMod * frontDist); // inward
-	private Vertex v11 = new Vertex(-middleXMod * frontHeight, frontWidth
-			- displaceY + middleY, -middleZMod * frontDist); // outward
+			middleTotalY, -middleZMod * frontDist);
+	// top left outward
+	private Vertex v11 = new Vertex(-middleXMod * frontHeight, middleTotalY, -middleZMod * frontDist);
 
 	private Vertex v9d = new Vertex(-frontHeight + frontWidth2, frontWidth
 			- displaceY, -frontDist - frontWidth2);
 	private Vertex v10d = new Vertex(-middleXMod * frontHeight + frontWidth2,
-			frontWidth - displaceY + middleY + frontWidth, -middleZMod
+			frontWidth + middleTotalY, -middleZMod
 					* frontDist - frontWidth2);
 
+	// bottom right inward
 	private Vertex v12 = new Vertex(frontHeight - frontWidth2, frontWidth
 			- displaceY, -frontDist);
+	// top right inward
 	private Vertex v13 = new Vertex(middleXMod * frontHeight - frontWidth2,
-			frontWidth - displaceY + middleY, -middleZMod * frontDist); // inward
+			middleTotalY, -middleZMod * frontDist);
+	// top left inward
 	private Vertex v14 = new Vertex(middleXMod * frontHeight, frontWidth
-			- displaceY + middleY, -middleZMod * frontDist); // outward
+			+ middleTotalY	, -middleZMod * frontDist);
 
 	private Vertex v12d = new Vertex(frontHeight - frontWidth2, frontWidth
 			- displaceY, -frontDist - frontWidth2);
@@ -262,7 +286,7 @@ public class Cockpit {
 		buttonRotation = 30.0f;
 
 		chargeTickLimit = chargeTickLimit * animationScale;
-		dischargeTickLimit = dischargeTickLimit * animationScale;
+		restTickLimit = restTickLimit * animationScale;
 	}
 
 	public float getFronDist() {
@@ -274,7 +298,7 @@ public class Cockpit {
 	}
 
 	protected void checkSceneInput() {
-		if (mode == 'n') {
+		if (mode == 'd') {
 			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
 				mode = 'c';
 			}
@@ -285,17 +309,17 @@ public class Cockpit {
 		if(mode == 'c') {
 			animButton(cos((float) tick / chargeTickLimit));
 			if (tick > chargeTickLimit) {
-				mode = 'd';
+				mode = 'r';
 				tickReset();
 				return true;
 			} else {
 				tick++;
 			}
 			
-		} else if(mode == 'd') {
-				animButton(cos((float) tick / dischargeTickLimit + 1));
-				if (tick > dischargeTickLimit) {
-					mode = 'n';
+		} else if(mode == 'r') {
+				animButton(cos((float) tick / restTickLimit + 1));
+				if (tick > restTickLimit) {
+					mode = 'd';
 					tickReset();
 				} else {
 					tick++;

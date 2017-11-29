@@ -41,37 +41,35 @@ import GraphicsLab.*;
  * </ul>
  */
 public class Scene extends GraphicsLab {
-	// declare tools
+	/* declare tools */
 	private Random rnd = new Random();
 
-	// declare aspect ratio
+	/* declare aspect ratio */
 	private float aspect;
 
-	// declare warp animation variables
-	private boolean warping = false; // whether the user is warping
-	private char mode = 'd'; // current mode in animation, 'd' is the default
-								// mode
+	/* declare warp animation variables */
+	// stores whether the user is warping
+	private boolean warping = false;
+	// current mode in animation, 'd' is the default mode
+	private char mode = 'd';
+	// the tick counter for the current animation mode
 	private int tick = 0;
-	private float startStallTickLimit = 100 * getAnimationScale(); // 's' mode,
-																	// before
-																	// actual
-																	// warp
-																	// begins
-	private float fadeInTickLimit = 50 * getAnimationScale(); // 'i' mode, fades
-																// scene into
-																// warp
-	private float warpingTickLimit = 25 * getAnimationScale(); // 'w' mode, warp
-																// active
-	private float fadeOutTickLimit = 50 * getAnimationScale(); // 'o' mode, warp
-																// active
-	private float endStallTickLimit = 50 * getAnimationScale(); // 'e' mode,
-																// smooths out
-																// pov reset
-	private float globalAmbient = 0.125f; // default value of ambient lighting
-	private float currentAmbient; // current value of ambient lighting
-	private float alpha = 0.0f; // default alpha property of white plane that
-								// covers the scene
-	// declare the range and current point of view angles
+	// 's' mode, before the actual warp begins to provide tension
+	private float startStallTickLimit = 100 * getAnimationScale();
+	// 'i' mode, fades scene into warp
+	private float fadeInTickLimit = 50 * getAnimationScale();
+	// 'w' mode, warp active and scene is fully bright
+	private float warpingTickLimit = 25 * getAnimationScale();
+	// 'o' mode, fades scene out of warp
+	private float fadeOutTickLimit = 50 * getAnimationScale();
+	// 'e' mode, smooths out pov reset
+	private float endStallTickLimit = 50 * getAnimationScale();
+	// default and current values of ambient lighting
+	private float globalAmbient = 0.125f;
+	private float currentAmbient;
+	// default alpha property of white plane that covers the scene
+	private float alpha = 0.0f;
+	// range and current point of view angles
 	private float povMin = 25.0f;
 	private float povMax = 45.0f;
 	private float pov = povMax;
@@ -80,21 +78,27 @@ public class Scene extends GraphicsLab {
 	 * float ampMin; float ampMax; float amp = ampMax;
 	 */
 
-	// declare the cockpit that contains check input, update and draw methods
-	// for a cockpit object
+	/*
+	 * declare the cockpit that contains check input, update and draw methods
+	 * for a cockpit object
+	 */
 	private Cockpit cockpit;
 
-	// declare background variables
+	/* declare background variables */
+	// positioning values of background plane
 	float bgHeight = 64.0f;
 	float bgZ = 96.0f;
+	// path values to access skyboxes
 	private String pckgDir = "SpaceHermit";
 	private String skyboxDir = "skyboxes";
 	private String[] skyboxNames = { "corona_ft.png", "redeclipse_ft.png",
 			"unnamedspace_ft.jpg", "unnamedspace3_ft.png" };
-	private List<Texture> skyboxes; // stores loaded skybox textures
-	private Texture currentSkybox; // stores skybox texture currently in use
-	private int currentSkyboxIndex = -1; // used to reference previously used
-											// skybox
+	// stores loaded skybox textures
+	private List<Texture> skyboxes;
+	// stores skybox texture currently in use
+	private Texture currentSkybox;
+	// used to reference previously used skybox
+	private int currentSkyboxIndex = -1;
 
 	public static void main(String args[]) {
 		new Scene().run(WINDOWED, "Scene", 1.0f);
@@ -285,13 +289,10 @@ public class Scene extends GraphicsLab {
 	 * @return an arraylist of the textures that loaded successfully
 	 */
 	private List<Texture> loadTextures(String dir, String[] names) {
-		List<Texture> textures = new ArrayList<Texture>(); // initiate arraylist
-															// that stores
-															// successfully
-															// loaded textures
-		Pattern ext = Pattern.compile("\\.(.+)"); // regex pattern that captures
-													// the image's type (i.e.
-													// png, jpg, etc.)
+		// initiate arraylist that stores successfully loaded textures
+		List<Texture> textures = new ArrayList<Texture>();
+		// regex pattern that captures the image's type (i.e. png, jpg, etc.)
+		Pattern ext = Pattern.compile("\\.(.+)");
 		// iterates over every image provided to attempt loading as a texture
 		for (String name : names) {
 			try {
