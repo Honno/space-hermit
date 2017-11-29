@@ -56,7 +56,7 @@ public class Cockpit {
 	private float buttonY = -frontWidth + displaceY;
 	private float buttonZMod = 0.5f;
 	private float buttonZMid = frontDist * buttonBaseMod;
-	private float buttonRotationMod = 30.0f;
+	private float buttonRotationMod = 35.0f;
 	private float buttonZ;
 	private float buttonRotation;
 
@@ -238,13 +238,13 @@ public class Cockpit {
 			controlTotalZ);
 	// bottom left
 	private Vertex v30 = new Vertex(-controlTotalX,
-			controlTotalY - frontWidth2, controlTotalZ);
+			controlTotalY - frontWidth2 * 2, controlTotalZ);
 
 	// top right
 	private Vertex v31 = new Vertex(controlTotalX, controlTotalY, frontDist
 			* controlMod);
 	// bottom right
-	private Vertex v32 = new Vertex(controlTotalX, controlTotalY - frontWidth2,
+	private Vertex v32 = new Vertex(controlTotalX, controlTotalY - frontWidth2 * 2,
 			controlTotalZ);
 
 	/* button base bottom vertexes */
@@ -293,7 +293,7 @@ public class Cockpit {
 	public Cockpit(float animationScale) {
 		/* set default values for button position */
 		buttonZ = buttonZMid + buttonZMod;
-		buttonRotation = 30.0f;
+		buttonRotation = buttonRotationMod;
 		/* modify tick limits with animation scale */
 		chargeTickLimit = chargeTickLimit * animationScale;
 		restTickLimit = restTickLimit * animationScale;

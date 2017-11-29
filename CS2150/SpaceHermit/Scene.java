@@ -55,15 +55,15 @@ public class Scene extends GraphicsLab {
 	// the tick counter for the current animation mode
 	private int tick = 0;
 	// 's' mode, before the actual warp begins to provide tension
-	private float startStallTickLimit = 100 * getAnimationScale();
+	private float startStallTickLimit = 200 * getAnimationScale();
 	// 'i' mode, fades scene into warp
-	private float fadeInTickLimit = 50 * getAnimationScale();
+	private float fadeInTickLimit = 100 * getAnimationScale();
 	// 'w' mode, warp active and scene is fully bright
-	private float warpingTickLimit = 25 * getAnimationScale();
+	private float warpingTickLimit = 50 * getAnimationScale();
 	// 'o' mode, fades scene out of warp
-	private float fadeOutTickLimit = 50 * getAnimationScale();
+	private float fadeOutTickLimit = 100 * getAnimationScale();
 	// 'e' mode, smooths out pov reset
-	private float endStallTickLimit = 50 * getAnimationScale();
+	private float endStallTickLimit = 100 * getAnimationScale();
 	// default and current values of ambient lighting
 	private float globalAmbient = 0.125f;
 	private float currentAmbient;
@@ -75,14 +75,27 @@ public class Scene extends GraphicsLab {
 	private float pov = povMax;
 
 	/*
-	 * float ampMin; float ampMax; float amp = ampMax;
-	 */
-
-	/*
 	 * declare the cockpit that contains check input, update and draw methods
 	 * for a cockpit object
 	 */
 	private Cockpit cockpit;
+	
+	/* declare cockpit bobbing variables */
+	// amplitude parameters
+	private float ampMaxDefault = 0.5f;
+	private float ampWarpMax = 4.0f;
+	private float ampMax;
+	// period parameters
+	private float periodDefault = 500.0f * getAnimationScale();
+	private float period;
+	// current translation parameters
+	private float bobX = 0.0f;
+	private float bobY = 0.0f;
+	private float bobZ = 0.0f;
+	// current tick
+	private int xTick = 0;
+	private int yTick = 0;
+	private int zTick = 0;
 
 	/* declare background variables */
 	// positioning values of background plane
@@ -112,6 +125,10 @@ public class Scene extends GraphicsLab {
 		// constructor so the cockpit's animations runs in-sync with scene
 		cockpit = new Cockpit(getAnimationScale());
 
+		// sets random values for bobbing effect
+		resetBob();
+		initBob();
+		
 		// loads skyboxes, and set a random one as current
 		skyboxes = loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
 		newSkybox();
@@ -204,6 +221,8 @@ public class Scene extends GraphicsLab {
 					tickReset();
 					// set pov to it's minimum value
 					pov = povMin;
+				} else {
+					increaseBob((float) tick / (startStallTickLimit + fadeInTickLimit));
 				}
 				break;
 			case 'i': // fade in
@@ -219,6 +238,7 @@ public class Scene extends GraphicsLab {
 					// change current skybox texture
 					newSkybox();
 				} else {
+					increaseBob((float) (tick + startStallTickLimit) / (startStallTickLimit + fadeInTickLimit));
 					// increase global ambience and alpha of white screen
 					currentAmbient = ratio * (1.0f - globalAmbient)
 							+ globalAmbient;
@@ -228,6 +248,7 @@ public class Scene extends GraphicsLab {
 			case 'w': // warping
 				ratio = getRatio(warpingTickLimit);
 				if (ratio >= 1) {
+					resetBob();
 					// if warping has ended, change mode to fade out
 					mode = 'o';
 					tickReset();
@@ -237,6 +258,7 @@ public class Scene extends GraphicsLab {
 			}
 		}
 		tick++;
+		nextBob();
 	}
 
 	protected void renderScene() {
@@ -253,6 +275,7 @@ public class Scene extends GraphicsLab {
 
 		// draw cockpit
 		GL11.glPushMatrix();
+		GL11.glTranslatef(bobX, bobY, bobZ);
 		cockpit.renderScene();
 		GL11.glPopMatrix();
 
@@ -423,5 +446,38 @@ public class Scene extends GraphicsLab {
 	private void resetFade() {
 		currentAmbient = globalAmbient;
 		alpha = 0.0f;
+	}
+	
+	public void resetBob() {
+		ampMax = ampMaxDefault;
+		period = periodDefault;
+	}
+	
+	public void initBob() {
+		xTick = rnd.nextInt(Math.round(period));
+		yTick = rnd.nextInt(Math.round(period));
+		zTick = rnd.nextInt(Math.round(period));
+	}
+	
+	private void nextBob() {
+		double rad = 2 * Math.PI;
+		bobX = (float) Math.sin((xTick / period) * rad) * ampMax;
+		bobY = (float) Math.sin((yTick / period) * rad) * ampMax;
+		bobZ = (float) Math.sin((zTick / period) * rad) * ampMax;
+		if(xTick++ > period) {
+			xTick = 0;
+		}
+		if(yTick++ > period) {
+			yTick = 0;
+		}
+		if(zTick++ > period) {
+			zTick = 0;
+		}
+		
+	}
+	
+	private void increaseBob(float ratio) {
+		ampMax = ampMaxDefault + ratio * ratio * (ampWarpMax - ampMaxDefault);
+		period = periodDefault - ratio * ratio * periodDefault;
 	}
 }
