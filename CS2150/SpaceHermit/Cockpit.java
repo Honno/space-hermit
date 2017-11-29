@@ -281,35 +281,27 @@ public class Cockpit {
 		}
 	}
 
-	protected boolean updateScene(boolean stall) {
-		if (!stall) {
-			switch (mode) {
-			case 'c':
-				animButton(cos((float) tick / chargeTickLimit));
-				if (tick > chargeTickLimit) {
-					mode = 'd';
-					tickReset();
-					return true;
-				} else {
-					tick++;
-				}
-				break;
-			case 'd':
+	protected boolean updateScene() {
+		if(mode == 'c') {
+			animButton(cos((float) tick / chargeTickLimit));
+			if (tick > chargeTickLimit) {
+				mode = 'd';
+				tickReset();
+				return true;
+			} else {
+				tick++;
+			}
+			
+		} else if(mode == 'd') {
 				animButton(cos((float) tick / dischargeTickLimit + 1));
 				if (tick > dischargeTickLimit) {
 					mode = 'n';
 					tickReset();
-					return false;
 				} else {
 					tick++;
 				}
-				break;
-			default:
-				mode = 'n';
-				break;
-			}
 		}
-		return stall;
+		return false;
 	}
 
 	public void renderScene() {

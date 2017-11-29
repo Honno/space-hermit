@@ -19,8 +19,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.newdawn.slick.opengl.Texture;
 
-import com.sun.prism.paint.Color;
-
 import GraphicsLab.*;
 
 /**
@@ -42,42 +40,48 @@ import GraphicsLab.*;
  * protocol
  * </ul>
  */
-/**
- * @author matthew
- *
- */
 public class Scene extends GraphicsLab {
 	// declare tools
 	private Random rnd = new Random();
 
-	// declare aspect ratio */
+	// declare aspect ratio
 	private float aspect;
 
 	// declare warp animation variables
 	private boolean warping = false; // whether the user is warping
-	private char mode = 'd'; // current mode in animation, 'd' is the default mode
-	
+	private char mode = 'd'; // current mode in animation, 'd' is the default
+								// mode
 	private int tick = 0;
-	private float stallTickLimit = 100 * getAnimationScale(); // 's' mode, before actual warp begins
-	private float fadeInTickLimit = 50 * getAnimationScale(); // 'i' mode, fades scene into warp
-	private float warpingTickLimit = 25 * getAnimationScale(); // 'w' mode, warp active
-	private float fadeOutTickLimit = 50 * getAnimationScale(); // 'o' mode, warp active
-	private float endStallTickLimit = 100 * getAnimationScale(); // 'e' mode, smooths out pov reset
+	private float startStallTickLimit = 100 * getAnimationScale(); // 's' mode,
+																	// before
+																	// actual
+																	// warp
+																	// begins
+	private float fadeInTickLimit = 50 * getAnimationScale(); // 'i' mode, fades
+																// scene into
+																// warp
+	private float warpingTickLimit = 25 * getAnimationScale(); // 'w' mode, warp
+																// active
+	private float fadeOutTickLimit = 50 * getAnimationScale(); // 'o' mode, warp
+																// active
+	private float endStallTickLimit = 50 * getAnimationScale(); // 'e' mode,
+																// smooths out
+																// pov reset
+	private float globalAmbient = 0.125f; // default value of ambient lighting
+	private float currentAmbient; // current value of ambient lighting
+	private float alpha = 0.0f; // default alpha property of white plane that
+								// covers the scene
+	// declare the range and current point of view angles
+	private float povMin = 25.0f;
+	private float povMax = 45.0f;
+	private float pov = povMax;
 
-	float globalAmbient = 0.125f;
-	float currentAmbient;
+	/*
+	 * float ampMin; float ampMax; float amp = ampMax;
+	 */
 
-	float alpha = 0.0f; 
-
-	float povMin = 25.0f;
-	float povMax = 45.0f;
-	float pov = povMax;
-
-	/*float ampMin;
-	float ampMax;
-	float amp = ampMax;*/
-
-	// declare the cockpit that contains check input, update and draw methods for the cockpit
+	// declare the cockpit that contains check input, update and draw methods
+	// for a cockpit object
 	private Cockpit cockpit;
 
 	// declare background variables
@@ -87,9 +91,10 @@ public class Scene extends GraphicsLab {
 	private String skyboxDir = "skyboxes";
 	private String[] skyboxNames = { "corona_ft.png", "redeclipse_ft.png",
 			"unnamedspace_ft.jpg", "unnamedspace3_ft.png" };
-	private List<Texture> skyboxes;
-	private Texture currentSkybox;
-	private int currentSkyboxIndex = -1; // used to store previously used skybox
+	private List<Texture> skyboxes; // stores loaded skybox textures
+	private Texture currentSkybox; // stores skybox texture currently in use
+	private int currentSkyboxIndex = -1; // used to reference previously used
+											// skybox
 
 	public static void main(String args[]) {
 		new Scene().run(WINDOWED, "Scene", 1.0f);
@@ -97,23 +102,23 @@ public class Scene extends GraphicsLab {
 
 	protected void initScene() throws Exception {
 		// define aspect ratio of program
-		aspect = (float) displayMode.getWidth()
-				/ displayMode.getHeight();
-		
-		// assigns new instance of cockpit class, passes animation scale in constructor so the cockpit's animations runs in-sync with scene
+		aspect = (float) displayMode.getWidth() / displayMode.getHeight();
+
+		// assigns new instance of cockpit class, passes animation scale in
+		// constructor so the cockpit's animations runs in-sync with scene
 		cockpit = new Cockpit(getAnimationScale());
-		
+
 		// loads skyboxes, and set a random one as current
 		skyboxes = loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
-				newSkybox();
-		
+		newSkybox();
+
 		// sets the global ambient lighting to it's default value
-		resetAmbient();
+		resetFade();
 
 		// supply OpenGL with the properties for the main light
-		float ambient0[] = {0.0625f, 0.0625f, 0.0625f, 1.0f};
-		float diffuse0[] = {0.125f, 0.125f, 0.25f, 1.0f};
-		float position0[] = {0.0f, 16.0f, -16.0f, 1.0f};
+		float ambient0[] = { 0.0625f, 0.0625f, 0.0625f, 1.0f };
+		float diffuse0[] = { 0.125f, 0.125f, 0.25f, 1.0f };
+		float position0[] = { 0.0f, 16.0f, -16.0f, 1.0f };
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT,
 				FloatBuffer.wrap(ambient0));
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE,
@@ -140,25 +145,26 @@ public class Scene extends GraphicsLab {
 	protected void updateScene() {
 		// stores ratio of tick to the tick limit of current animation mode
 		float ratio;
-		
+
 		if (!warping) {
 			// checks what non-warp modes are active if any
 			switch (mode) {
-			case 'o':
+			case 'o': // fade out
 				ratio = getRatio(fadeOutTickLimit);
 				if (ratio > 1) {
 					// if fade out has ended, change mode to end stall
 					mode = 'e';
 					tickReset();
-					// sets global ambient lighting to it's default value
-					resetAmbient();
+					// set global ambient lighting to it's default value
+					resetFade();
 				} else {
-					// else gradually decrease global ambience and alpha of white screen
-			    	currentAmbient = 1.0f - ratio * (1.0f - globalAmbient);
-			    	alpha = 1.0f - ratio;
+					// else gradually decrease global ambience and alpha of
+					// white screen
+					currentAmbient = 1.0f - ratio * (1.0f - globalAmbient);
+					alpha = 1.0f - ratio;
 				}
 				break;
-			case 'e': 
+			case 'e': // end stall
 				ratio = getRatio(endStallTickLimit);
 				if (ratio > 1) {
 					// if end stall has ended, change to default mode
@@ -167,54 +173,61 @@ public class Scene extends GraphicsLab {
 					// reset pov to default value
 					pov = povMax;
 				} else {
-					// gradually increase pov to default value
+					// else gradually increase pov to default value
 					pov = povMin + ratio * (povMax - povMin);
 				}
 				break;
-			
+
 			}
 
-			// updates cockpit, value returned tells scene whether warping has been activated
-			warping = cockpit.updateScene(warping);
-			
+			// updates cockpit, value returned tells scene whether warping has
+			// been activated
+			warping = cockpit.updateScene();
+
 			// if warp has been activated then change mode to start stall
 			if (warping) {
 				mode = 's';
 				tickReset();
 			}
 		} else {
-			// checks what warp modes are active
+			// checks what warping modes are active
 			switch (mode) {
-			case 's': // stall
-				ratio = getRatio(stallTickLimit);
+			case 's': // start stall
+				ratio = getRatio(startStallTickLimit);
 				if (ratio > 1) {
-					// if start stall has ended,
+					// if start stall has ended, change mode to fade in
 					mode = 'i';
 					tickReset();
+					// set pov to it's minimum value
 					pov = povMin;
 				}
 				break;
 			case 'i': // fade in
 				ratio = getRatio(fadeInTickLimit);
 				if (ratio > 1) {
+					// if fade in has ended, change mode to warping
 					mode = 'w';
 					tickReset();
+					// set ambience to most extreme value
 					currentAmbient = 1.0f;
+					// make white screen fully opaque
 					alpha = 1.0f;
+					// change current skybox texture
 					newSkybox();
 				} else {
 					// increase global ambience and alpha of white screen
-					currentAmbient = ratio * (1.0f - globalAmbient) + globalAmbient;
+					currentAmbient = ratio * (1.0f - globalAmbient)
+							+ globalAmbient;
 					alpha = ratio;
 				}
 				break;
 			case 'w': // warping
 				ratio = getRatio(warpingTickLimit);
 				if (ratio >= 1) {
+					// if warping has ended, change mode to fade out
 					mode = 'o';
-					warping = false;
 					tickReset();
-				} else {
+					warping = false;
 				}
 				break;
 			}
@@ -223,45 +236,89 @@ public class Scene extends GraphicsLab {
 	}
 
 	protected void renderScene() {
-		// set the global ambient lighting
+		// set the global ambient lighting to use current ambient level
 		GL11.glLightModel(
 				GL11.GL_LIGHT_MODEL_AMBIENT,
 				FloatBuffer.wrap(new float[] { currentAmbient, currentAmbient,
 						currentAmbient, 1.0f }));
 
+		// draw background
 		GL11.glPushMatrix();
 		drawBackground(currentSkybox);
 		GL11.glPopMatrix();
 
+		// draw cockpit
 		GL11.glPushMatrix();
 		cockpit.renderScene();
 		GL11.glPopMatrix();
 
+		// draw the white plane that covers the scene used in fading animations
 		GL11.glPushMatrix();
 		drawWhitePlane(alpha);
 		GL11.glPopMatrix();
 
 	}
 
-	protected void cleanupScene() {// empty
+	protected void setSceneCamera() {
+		// set perspective projection, point of view assigned to a variable
+		// modified by warping sequence
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
+		GLU.gluPerspective(pov, aspect, 0.1f, 100.0f);
+
+		// default viewpoint is positioned at the scene origin facing along the
+		// negative Z axis
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glLoadIdentity();
 	}
 
+	protected void cleanupScene() {// TODO: Clean up your resources here
+	}
+
+	/**
+	 * Loads provided images into OpenGL textures.
+	 * 
+	 * @param dir
+	 *            the path to the images
+	 * @param names
+	 *            a array of all the names of the images
+	 * @return an arraylist of the textures that loaded successfully
+	 */
 	private List<Texture> loadTextures(String dir, String[] names) {
-		List<Texture> textures = new ArrayList<Texture>();
-		Pattern ext = Pattern.compile("\\.(.+)");
+		List<Texture> textures = new ArrayList<Texture>(); // initiate arraylist
+															// that stores
+															// successfully
+															// loaded textures
+		Pattern ext = Pattern.compile("\\.(.+)"); // regex pattern that captures
+													// the image's type (i.e.
+													// png, jpg, etc.)
+		// iterates over every image provided to attempt loading as a texture
 		for (String name : names) {
 			try {
+				// applies regex pattern to image name
 				Matcher match = ext.matcher(name);
 				match.find();
+				// loads texture with the path to image generated by the
+				// provided dir value and current name, and provides what is the
+				// image's type using captured regex pattern from name
 				textures.add(loadTexture(dir + "/" + name, match.group(1)
 						.toUpperCase()));
 			} catch (Exception e) {
+				// captures any errors (i.e. no pattern found, path does not
+				// exist, etc.)
 				e.printStackTrace();
 			}
 		}
 		return textures;
 	}
 
+	/**
+	 * Draws a plane to the back of the scene and applies a provided texture to
+	 * it.
+	 * 
+	 * @param texture
+	 *            the OpenGL texture to apply to plane
+	 */
 	private void drawBackground(Texture texture) {
 		// disable lighting calculations so that they don't affect
 		// the appearance of the texture
@@ -278,27 +335,33 @@ public class Scene extends GraphicsLab {
 		Vertex v2 = new Vertex(-bgHeight, bgHeight, -bgZ); // top left
 		Vertex v3 = new Vertex(bgHeight, bgHeight, -bgZ); // top right
 		Vertex v4 = new Vertex(bgHeight, -bgHeight, -bgZ); // bottom right
-
-		// draw the plane geometry. order the vertices so that the plane faces
-		// up
+		// draw the plane geometry
 		Util.drawRect(v4, v3, v2, v1);
-
 		// disables textures and reset any local lighting changes
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glPopAttrib();
 	}
 
+	/**
+	 * Draws a white plane that covers the whole scene with a provided alpha
+	 * value applied to it.
+	 * 
+	 * @param alpha
+	 *            the desired transparency of the plane to be drawn
+	 */
 	private void drawWhitePlane(float alpha) {
 		// disable lighting calculations so that they don't affect
 		// the appearance of the plane
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glDisable(GL11.GL_LIGHTING);
-		// change the geometry colour to white
+		// change geometry colour to white with the provided alpha value used
+		// for transparency
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, alpha);
+		// enable blending and set blend function to interpolate the plane's
+		// transparency to the whole scene
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		// draw back plane to double display size to ensure screen is fully
-		// covered
+		// draw back plane to (more than) cover the scene
 		Vertex v1 = new Vertex(-displayMode.getWidth(),
 				-displayMode.getHeight(), -1.0f); // bottom left
 		Vertex v2 = new Vertex(-displayMode.getWidth(),
@@ -307,19 +370,22 @@ public class Scene extends GraphicsLab {
 				-1.0f); // top right
 		Vertex v4 = new Vertex(displayMode.getWidth(),
 				-displayMode.getHeight(), -1.0f); // bottom right
-
-		// draw the plane geometry. order the vertices so that the plane faces
-		// up
+		// draw the plane geometry
 		Util.drawRect(v4, v3, v2, v1);
-
-		// reset any local lighting changes
+		// disable blending and reset any local lighting changes
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glPopAttrib();
 	}
 
+	/**
+	 * Change the current skybox to a new texture, ensuring no skyboxes are
+	 * shown twice in a row.
+	 */
 	private void newSkybox() {
 		boolean found = false;
 		int index = currentSkyboxIndex;
+		// keeps on iterating until a valid skybox index is found with a random
+		// number generator
 		while (!found) {
 			index = rnd.nextInt(skyboxes.size());
 			if (index != currentSkyboxIndex) {
@@ -327,32 +393,33 @@ public class Scene extends GraphicsLab {
 				found = true;
 			}
 		}
+		// gets the new skybox texture from the pre-loaded list of skybox
+		// textures
 		currentSkybox = skyboxes.get(currentSkyboxIndex);
 	}
 
+	/**
+	 * Resets the tick count.
+	 */
 	private void tickReset() {
 		tick = 0;
 	}
 
+	/**
+	 * Calculates the ratio of the tick to a given value.
+	 * 
+	 * @param tickLimit
+	 *            the tick limit to
+	 * @return
+	 */
 	private float getRatio(float tickLimit) {
 		return (float) tick / tickLimit;
 	}
 
-	protected void setSceneCamera() {
-		// default projection is a perspective projection with a 90 (45*2)
-		// degree field of view, width/height
-		// aspect ratio and visible range of 0.1 to 100.0 scene units
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		GLU.gluPerspective(pov, aspect, 0.1f, 100.0f);
-
-		// default viewpoint is positioned at the scene origin facing along the
-		// negative Z axis
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glLoadIdentity();
-	}
-
-	private void resetAmbient() {
+	/**
+	 * Sets the current ambient and alpha values to their default state.f
+	 */
+	private void resetFade() {
 		currentAmbient = globalAmbient;
 		alpha = 0.0f;
 	}
