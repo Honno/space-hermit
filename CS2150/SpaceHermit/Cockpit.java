@@ -17,12 +17,12 @@ public class Cockpit {
 	private float chargeTickLimit = 100;
 	// 'r' mode, how long it takes the lever to return to it's rest position
 	private float restTickLimit = chargeTickLimit * 4;
-	
+
 	/* declare chasis variables */
 	// the y displacement of the whole cockpit
-	private float displaceY = 12f;
+	private float displaceY = -12f;
 	// front properties
-	private float frontDist = 64f;
+	private float frontDist = -64f;
 	private float frontWidth = 0.5f;
 	private float frontWidth2 = 2 * frontWidth;
 	private float frontHeight = 12f;
@@ -37,7 +37,7 @@ public class Cockpit {
 	private float topY = 0f;
 	private float topXMod = 1.5f;
 	// floor properties
-	private float floorY = 20f;
+	private float floorY = -20f;
 	private float floorHeight = 6f;
 	private float floorZMod = 0.5f;
 	// bar that bridges top bar properties
@@ -52,234 +52,239 @@ public class Cockpit {
 	private float buttonBaseDepth = 0.5f;
 	private float buttonBaseInwardMod = 0.75f;
 	private float buttonBaseMod = 0.85f;
-	// button properties
-	private float buttonHeight = 0.1f * buttonBaseHeight;
-	private float buttonDepth = 8 * buttonHeight;
-	private float buttonExtendX = 2 * buttonHeight;
-	private float buttonY = -frontWidth - displaceY;
+	// button positioning properties
+	private float buttonY = -frontWidth + displaceY;
 	private float buttonZMod = 0.5f;
-	private float buttonZMid = -frontDist * buttonBaseMod;
+	private float buttonZMid = frontDist * buttonBaseMod;
 	private float buttonRotationMod = 30.0f;
 	private float buttonZ;
 	private float buttonRotation;
 
-	/* declare vertexes of cockpit 
-	 * letter 'd' stands for a literal "in-depth" version of a vertex, used to make everything look 3D
-	 * */
+	/* declare vertexes of cockpit */
+	// nb: letter 'd' stands for an "in-depth" version of the vertex with the
+	// same number, used to make everything look 3D
+
 	/* front bar vertexes */
 	// bottom left
-	private Vertex v1 = new Vertex(-frontHeight, -frontWidth - displaceY,
-			-frontDist); 
+	private Vertex v1 = new Vertex(-frontHeight, -frontWidth + displaceY,
+			frontDist);
 	// top left
-	private Vertex v2 = new Vertex(-frontHeight, frontWidth - displaceY,
-			-frontDist); 
+	private Vertex v2 = new Vertex(-frontHeight, frontWidth + displaceY,
+			frontDist);
 	// top right
-	private Vertex v3 = new Vertex(frontHeight, frontWidth - displaceY,
-			-frontDist); 
+	private Vertex v3 = new Vertex(frontHeight, frontWidth + displaceY,
+			frontDist);
 	// bottom right
-	private Vertex v4 = new Vertex(frontHeight, -frontWidth - displaceY,
-			-frontDist); 
+	private Vertex v4 = new Vertex(frontHeight, -frontWidth + displaceY,
+			frontDist);
 
 	private Vertex v2d = new Vertex(-frontHeight - frontWidth, frontWidth
-			- displaceY, -frontDist - frontWidth2);
+			+ displaceY, frontDist - frontWidth2);
 	private Vertex v3d = new Vertex(frontHeight + frontWidth, frontWidth
-			- displaceY, -frontDist - frontWidth2);
+			+ displaceY, frontDist - frontWidth2);
 
 	/* side bars vertexes */
-	// calculate total displace of side bars
-	private float bottomTotalY = displaceY + bottomY;
-	
-	// top left
-	private Vertex v5 = new Vertex(-bottomXMod * frontHeight, frontWidth -
-			bottomTotalY, 0);
-	// bottom left
-	private Vertex v6 = new Vertex(-bottomXMod * frontHeight, -frontWidth -
-			bottomTotalY, 0);
+	// calculate total x displacement of side bars
+	private float bottomTotalX = bottomXMod * frontHeight;
+	// calculate total y displacement of side bars
+	private float bottomTotalY = displaceY - bottomY;
 
-	private Vertex v5d = new Vertex(-bottomXMod * frontHeight - frontWidth2,
-			frontWidth - bottomTotalY, 0);
+	// top left
+	private Vertex v5 = new Vertex(-bottomTotalX, frontWidth + bottomTotalY, 0);
+	// bottom left
+	private Vertex v6 = new Vertex(-bottomTotalX, -frontWidth + bottomTotalY, 0);
+
+	private Vertex v5d = new Vertex(-bottomTotalX - frontWidth2, frontWidth
+			+ bottomTotalY, 0);
 
 	// top right
-	private Vertex v7 = new Vertex(bottomXMod * frontHeight, frontWidth
-			- bottomTotalY, 0);
+	private Vertex v7 = new Vertex(bottomTotalX, frontWidth + bottomTotalY, 0);
 	// bottom right
-	private Vertex v8 = new Vertex(bottomXMod * frontHeight, -frontWidth
-			- bottomTotalY, 0);
+	private Vertex v8 = new Vertex(bottomTotalX, -frontWidth + bottomTotalY, 0);
 
-	private Vertex v7d = new Vertex(bottomXMod * frontHeight + frontWidth2,
-			frontWidth - bottomTotalY, 0);
+	private Vertex v7d = new Vertex(bottomTotalX + frontWidth2, frontWidth
+			+ bottomTotalY, 0);
 
 	/* middle bars vertexes */
-	private float middleTotalY = frontWidth - displaceY + middleY;
-	
+	// calculate total x displacement of middle bars
+	private float middleTotalX = middleXMod * frontHeight;
+	// calculate total y displacement of middle bars
+	private float middleTotalY = frontWidth + displaceY + middleY;
+
+	// calculate total z displacement of middle bars
+	private float middleTotalZ = middleZMod * frontDist;
+
 	// bottom left inward
 	private Vertex v9 = new Vertex(-frontHeight + frontWidth2, frontWidth
-			- displaceY, -frontDist);
+			+ displaceY, frontDist);
 	// top left inward
-	private Vertex v10 = new Vertex(-middleXMod * frontHeight + frontWidth2,
-			middleTotalY, -middleZMod * frontDist);
+	private Vertex v10 = new Vertex(-middleTotalX + frontWidth2, middleTotalY,
+			middleTotalZ);
 	// top left outward
-	private Vertex v11 = new Vertex(-middleXMod * frontHeight, middleTotalY, -middleZMod * frontDist);
+	private Vertex v11 = new Vertex(-middleTotalX, middleTotalY, middleTotalZ);
 
 	private Vertex v9d = new Vertex(-frontHeight + frontWidth2, frontWidth
-			- displaceY, -frontDist - frontWidth2);
-	private Vertex v10d = new Vertex(-middleXMod * frontHeight + frontWidth2,
-			frontWidth + middleTotalY, -middleZMod
-					* frontDist - frontWidth2);
+			+ displaceY, frontDist - frontWidth2);
+	private Vertex v10d = new Vertex(-middleTotalX + frontWidth2, frontWidth
+			+ middleTotalY, middleTotalZ - frontWidth2);
 
 	// bottom right inward
 	private Vertex v12 = new Vertex(frontHeight - frontWidth2, frontWidth
-			- displaceY, -frontDist);
+			+ displaceY, frontDist);
 	// top right inward
-	private Vertex v13 = new Vertex(middleXMod * frontHeight - frontWidth2,
-			middleTotalY, -middleZMod * frontDist);
-	// top left inward
-	private Vertex v14 = new Vertex(middleXMod * frontHeight, frontWidth
-			+ middleTotalY	, -middleZMod * frontDist);
+	private Vertex v13 = new Vertex(middleTotalX - frontWidth2, middleTotalY,
+			middleTotalZ);
+	// top right outward
+	private Vertex v14 = new Vertex(middleTotalX, middleTotalY, middleTotalZ);
 
 	private Vertex v12d = new Vertex(frontHeight - frontWidth2, frontWidth
-			- displaceY, -frontDist - frontWidth2);
-	private Vertex v13d = new Vertex(middleXMod * frontHeight - frontWidth2,
-			frontWidth - displaceY + middleY + frontWidth, -middleZMod
-					* frontDist - frontWidth2);
+			+ displaceY, frontDist - frontWidth2);
+	private Vertex v13d = new Vertex(middleTotalX - frontWidth2, frontWidth
+			+ displaceY + middleY + frontWidth, middleTotalZ - frontWidth2);
 
-	// middle-top
-	private Vertex v15 = new Vertex(-middleXMod * frontHeight, frontWidth
-			- displaceY + middleY + frontWidth2, -middleZMod * frontDist); // inward
-	private Vertex v16 = new Vertex(-middleXMod * frontHeight - frontWidth2,
-			frontWidth - displaceY + middleY + frontWidth2, -middleZMod
-					* frontDist); // outward
+	/* middle-top bars vertexes */
+	// calculate total y displacement of middle bars
+	private float middleTopTotalY = middleTotalY + frontWidth2;
 
-	private Vertex v15d = new Vertex(-middleXMod * frontHeight, frontWidth
-			- displaceY + middleY + frontWidth2 + frontWidth, -middleZMod
-			* frontDist + frontWidth);
+	// left inward
+	private Vertex v15 = new Vertex(-middleTotalX, middleTopTotalY,
+			middleTotalZ);
+	// left outward
+	private Vertex v16 = new Vertex(-middleTotalX - frontWidth2,
+			middleTopTotalY, middleTotalZ);
 
-	private Vertex v17 = new Vertex(middleXMod * frontHeight, frontWidth
-			- displaceY + middleY + frontWidth2, -middleZMod * frontDist); // inward
-	private Vertex v18 = new Vertex(middleXMod * frontHeight + frontWidth2,
-			frontWidth - displaceY + middleY + frontWidth2, -middleZMod
-					* frontDist); // outward
+	private Vertex v15d = new Vertex(-middleTotalX, middleTopTotalY
+			+ frontWidth, middleTotalZ - frontWidth);
 
-	private Vertex v17d = new Vertex(middleXMod * frontHeight, frontWidth
-			- displaceY + middleY + frontWidth2 + frontWidth, -middleZMod
-			* frontDist + frontWidth);
+	// right inward
+	private Vertex v17 = new Vertex(middleTotalX, middleTopTotalY, middleTotalZ);
+	// right outward
+	private Vertex v18 = new Vertex(middleTotalX + frontWidth2,
+			middleTopTotalY, middleTotalZ);
 
-	// top
-	private Vertex v19 = new Vertex(-topXMod * frontHeight, frontWidth
-			- displaceY + middleY + topY, 0);
-	private Vertex v20 = new Vertex(-topXMod * frontHeight + frontWidth2,
-			frontWidth - displaceY + middleY + topY + frontWidth2, 0);
+	private Vertex v17d = new Vertex(middleTotalX,
+			middleTopTotalY + frontWidth, middleTotalZ - frontWidth);
 
-	private Vertex v20d = new Vertex(
-			-topXMod * frontHeight + frontWidth2,
-			frontWidth - displaceY + middleY + topY + frontWidth2 + frontWidth2,
-			0);
+	/* top bar vertexes */
+	// calculate total x displacement of top bars
+	private float topTotalX = topXMod * frontHeight;
+	// calculate total y displacement of top bars
+	private float topTotalY = middleTopTotalY + topY;
 
-	private Vertex v21 = new Vertex(topXMod * frontHeight, frontWidth
-			- displaceY + middleY + topY, 0);
-	private Vertex v22 = new Vertex(topXMod * frontHeight - frontWidth2,
-			frontWidth - displaceY + middleY + topY + frontWidth2, 0);
+	// bottom left
+	private Vertex v19 = new Vertex(-topTotalX, topTotalY, 0);
+	// top left
+	private Vertex v20 = new Vertex(-topTotalX + frontWidth2, topTotalY
+			+ frontWidth2, 0);
 
-	private Vertex v22d = new Vertex(
-			topXMod * frontHeight - frontWidth2,
-			frontWidth - displaceY + middleY + topY + frontWidth2 + frontWidth2,
-			0);
+	private Vertex v20d = new Vertex(-topTotalX + frontWidth2, topTotalY
+			+ frontWidth2 * 2, 0);
 
-	// floor
-	private Vertex v23 = new Vertex(-floorHeight, -frontWidth - displaceY
-			- floorY, -floorZMod * frontDist);
-	private Vertex v24 = new Vertex(floorHeight, -frontWidth - displaceY
-			- floorY, -floorZMod * frontDist);
+	// bottom right
+	private Vertex v21 = new Vertex(topTotalX, topTotalY, 0);
+	// top right
+	private Vertex v22 = new Vertex(topTotalX - frontWidth2, topTotalY
+			+ frontWidth2, 0);
 
-	// middle-front
-	private Vertex v25 = new Vertex(-middleFrontHeight, -frontWidth - displaceY
-			+ middleFrontY, -middleFrontZMod * frontDist); // bottom left
-	private Vertex v26 = new Vertex(-middleFrontHeight, frontWidth - displaceY
-			+ middleFrontY, -middleFrontZMod * frontDist + frontWidth); // top
-																		// left
-	private Vertex v27 = new Vertex(middleFrontHeight, frontWidth - displaceY
-			+ middleFrontY, -middleFrontZMod * frontDist + frontWidth); // top
-																		// right
-	private Vertex v28 = new Vertex(middleFrontHeight, -frontWidth - displaceY
-			+ middleFrontY, -middleFrontZMod * frontDist); // bottom right
+	private Vertex v22d = new Vertex(topTotalX - frontWidth2, topTotalY
+			+ frontWidth2 * 2, 0);
 
-	private Vertex v26d = new Vertex(-middleFrontHeight, frontWidth - displaceY
-			+ middleFrontY + frontWidth, -middleFrontZMod * frontDist
-			+ frontWidth2 - frontWidth);
-	private Vertex v27d = new Vertex(middleFrontHeight, frontWidth - displaceY
-			+ middleFrontY + frontWidth, -middleFrontZMod * frontDist
-			+ frontWidth2 - frontWidth);
+	/* floor vertexes */
+	// calculate total y displacement of floor
+	private float floorTotalY = -frontWidth + displaceY + floorY;
+	// calculate total z displacement of floor
+	private float floorTotalZ = floorZMod * frontDist;
+	
+	// left
+	private Vertex v23 = new Vertex(-floorHeight, floorTotalY, floorTotalZ);
+	// right
+	private Vertex v24 = new Vertex(floorHeight, floorTotalY, floorTotalZ);
 
-	// control board
-	private Vertex v29 = new Vertex(-bottomXMod * frontHeight * controlMod,
-			-frontWidth - displaceY - bottomY * controlMod, -frontDist
-					* controlMod); // top left
-	private Vertex v30 = new Vertex(-bottomXMod * frontHeight * controlMod,
-			-frontWidth - displaceY - bottomY * controlMod - frontWidth2 * 2f,
-			-frontDist * controlMod); // bottom left
+	/* middle-front bar vertexes */
+	// calculate total y displacement of the middle-front bar
+	private float middleFrontTotalY = displaceY + middleFrontY;
+	// calculate total z displacement of the middle-front bar
+	private float middleFrontTotalZ = middleFrontZMod * frontDist;
 
-	private Vertex v31 = new Vertex(bottomXMod * frontHeight * controlMod,
-			-frontWidth - displaceY - bottomY * controlMod, -frontDist
-					* controlMod); // top right
-	private Vertex v32 = new Vertex(bottomXMod * frontHeight * controlMod,
-			-frontWidth - displaceY - bottomY * controlMod - frontWidth2 * 2f,
-			-frontDist * controlMod); // bottom right
+	// bottom left
+	private Vertex v25 = new Vertex(-middleFrontHeight, middleFrontTotalY
+			- frontWidth, middleFrontTotalZ);
+	// top left
+	private Vertex v26 = new Vertex(-middleFrontHeight, middleFrontTotalY
+			+ frontWidth, middleFrontTotalZ + frontWidth);
+	// top right
+	private Vertex v27 = new Vertex(middleFrontHeight, middleFrontTotalY
+			+ frontWidth, middleFrontTotalZ + frontWidth);
+	// bottom right
+	private Vertex v28 = new Vertex(middleFrontHeight, middleFrontTotalY
+			- frontWidth, middleFrontTotalZ);
 
-	// button base
-	private Vertex v33 = new Vertex(-buttonBaseWidth, -frontWidth - displaceY
-			- bottomY * buttonBaseMod, -frontDist * buttonBaseMod
-			+ buttonBaseHeight); // bottom left
-	private Vertex v34 = new Vertex(-buttonBaseWidth, -frontWidth - displaceY
-			- bottomY * buttonBaseMod, -frontDist * buttonBaseMod
-			- buttonBaseHeight); // top left
-	private Vertex v35 = new Vertex(buttonBaseWidth, -frontWidth - displaceY
-			- bottomY * buttonBaseMod, -frontDist * buttonBaseMod
-			- buttonBaseHeight); // top right
-	private Vertex v36 = new Vertex(buttonBaseWidth, -frontWidth - displaceY
-			- bottomY * buttonBaseMod, -frontDist * buttonBaseMod
-			+ buttonBaseHeight); // bottom right
+	private Vertex v26d = new Vertex(-middleFrontHeight, middleFrontTotalY
+			+ frontWidth2, middleFrontTotalZ + frontWidth);
+	private Vertex v27d = new Vertex(middleFrontHeight, middleFrontTotalY
+			+ frontWidth2, middleFrontTotalZ + frontWidth);
 
-	private Vertex v37 = new Vertex(
-			-buttonBaseWidth * buttonBaseInwardMod,
-			-frontWidth - displaceY - bottomY * buttonBaseMod + buttonBaseDepth,
-			-frontDist * buttonBaseMod + buttonBaseHeight); // bottom left
-	private Vertex v38 = new Vertex(
-			-buttonBaseWidth * buttonBaseInwardMod,
-			-frontWidth - displaceY - bottomY * buttonBaseMod + buttonBaseDepth,
-			-frontDist * buttonBaseMod - buttonBaseHeight); // top left
-	private Vertex v39 = new Vertex(
-			buttonBaseWidth * buttonBaseInwardMod,
-			-frontWidth - displaceY - bottomY * buttonBaseMod + buttonBaseDepth,
-			-frontDist * buttonBaseMod - buttonBaseHeight); // top right
-	private Vertex v40 = new Vertex(
-			buttonBaseWidth * buttonBaseInwardMod,
-			-frontWidth - displaceY - bottomY * buttonBaseMod + buttonBaseDepth,
-			-frontDist * buttonBaseMod + buttonBaseHeight); // bottom right
+	/* control board vertexes */
+	// calculate total x displacement of control board
+	private float controlTotalX = bottomXMod * frontHeight * controlMod;
+	// calculate total y displacement of the control board
+	private float controlTotalY = -frontWidth + displaceY - bottomY
+			* controlMod;
+	// calculate total z displacement of control board
+	private float controlTotalZ = controlMod * frontDist;
 
-	// button
-	private Vertex vb1 = new Vertex(-buttonHeight, 0, buttonHeight); // left
-	private Vertex vb2 = new Vertex(buttonHeight, 0, buttonHeight); // right
+	// top left
+	private Vertex v29 = new Vertex(-controlTotalX, controlTotalY,
+			controlTotalZ);
+	// bottom left
+	private Vertex v30 = new Vertex(-controlTotalX,
+			controlTotalY - frontWidth2, controlTotalZ);
 
-	private Vertex vb3 = new Vertex(-buttonHeight, buttonDepth, buttonHeight); // left
-	private Vertex vb4 = new Vertex(buttonHeight, buttonDepth, buttonHeight); // right
+	// top right
+	private Vertex v31 = new Vertex(controlTotalX, controlTotalY, frontDist
+			* controlMod);
+	// bottom right
+	private Vertex v32 = new Vertex(controlTotalX, controlTotalY - frontWidth2,
+			controlTotalZ);
 
-	private Vertex vb5 = new Vertex(-buttonHeight - buttonExtendX, buttonDepth,
-			buttonHeight); // bottom left
-	private Vertex vb6 = new Vertex(-buttonHeight - buttonExtendX, buttonDepth
-			+ buttonHeight * 2, buttonHeight); // top left
-	private Vertex vb7 = new Vertex(buttonHeight + buttonExtendX, buttonDepth
-			+ buttonHeight * 2, buttonHeight); // top right
-	private Vertex vb8 = new Vertex(buttonHeight + buttonExtendX, buttonDepth,
-			buttonHeight); // bottom right
+	/* button base bottom vertexes */
+	// calculate total y displacement of the control board
+	private float buttonBaseTotalY = -frontWidth + displaceY - bottomY
+			* buttonBaseMod;
+	// calculate total z displacement of control board
+	private float buttonBaseTotalZ = buttonBaseMod * frontDist;
 
-	private Vertex vb5d = new Vertex(-buttonHeight - buttonExtendX,
-			buttonDepth, buttonHeight - buttonHeight * 2); // bottom left in
-	private Vertex vb6d = new Vertex(-buttonHeight - buttonExtendX, buttonDepth
-			+ buttonHeight, buttonHeight - buttonHeight * 2); // top left in
-	private Vertex vb7d = new Vertex(buttonHeight + buttonExtendX, buttonDepth
-			+ buttonHeight, buttonHeight - buttonHeight * 2); // top right in
-	private Vertex vb8d = new Vertex(buttonHeight + buttonExtendX, buttonDepth,
-			buttonHeight - buttonHeight * 2); // bottom right
+	// bottom left
+	private Vertex v33 = new Vertex(-buttonBaseWidth, buttonBaseTotalY,
+			buttonBaseTotalZ + buttonBaseHeight);
+	// top left
+	private Vertex v34 = new Vertex(-buttonBaseWidth, buttonBaseTotalY,
+			buttonBaseTotalZ - buttonBaseHeight);
+	// top right
+	private Vertex v35 = new Vertex(buttonBaseWidth, buttonBaseTotalY,
+			buttonBaseTotalZ - buttonBaseHeight);
+	// bottom right
+	private Vertex v36 = new Vertex(buttonBaseWidth, buttonBaseTotalY,
+			buttonBaseTotalZ + buttonBaseHeight);
+
+	/* button base top vertexes */
+	// calculate total x displacement for top of button base
+	private float buttonBaseTopTotalX = buttonBaseWidth * buttonBaseInwardMod;
+	// calculate total y displacement of the control board
+	private float buttonBaseTopTotalY = buttonBaseTotalY + buttonBaseDepth;
+	
+	// bottom left
+	private Vertex v37 = new Vertex(-buttonBaseTopTotalX, buttonBaseTopTotalY,
+			buttonBaseTotalZ + buttonBaseHeight);
+	// top left
+	private Vertex v38 = new Vertex(-buttonBaseTopTotalX, buttonBaseTopTotalY,
+			buttonBaseTotalZ - buttonBaseHeight);
+	// top right
+	private Vertex v39 = new Vertex(buttonBaseTopTotalX, buttonBaseTopTotalY,
+			buttonBaseTotalZ - buttonBaseHeight);
+	// bottom right
+	private Vertex v40 = new Vertex(buttonBaseTopTotalX, buttonBaseTopTotalY,
+			buttonBaseTotalZ + buttonBaseHeight);
 
 	public Cockpit(float animationScale) {
 		buttonZ = buttonZMid + buttonZMod;
@@ -306,7 +311,7 @@ public class Cockpit {
 	}
 
 	protected boolean updateScene() {
-		if(mode == 'c') {
+		if (mode == 'c') {
 			animButton(cos((float) tick / chargeTickLimit));
 			if (tick > chargeTickLimit) {
 				mode = 'r';
@@ -315,26 +320,26 @@ public class Cockpit {
 			} else {
 				tick++;
 			}
-			
-		} else if(mode == 'r') {
-				animButton(cos((float) tick / restTickLimit + 1));
-				if (tick > restTickLimit) {
-					mode = 'd';
-					tickReset();
-				} else {
-					tick++;
-				}
+
+		} else if (mode == 'r') {
+			animButton(cos((float) tick / restTickLimit + 1));
+			if (tick > restTickLimit) {
+				mode = 'd';
+				tickReset();
+			} else {
+				tick++;
+			}
 		}
 		return false;
 	}
 
 	public void renderScene() {
-		/** reset positioning **/
+		/* reset positioning */
 		GL11.glTranslatef(0.0f, 0.0f, 0.0f);
 		GL11.glScalef(1.0f, 1.0f, 1.0f);
 		GL11.glRotatef(0.0f, 0.0f, 0.0f, 0.0f);
 
-		/** draw static objects **/
+		/* draw static objects */
 		drawFrame();
 		drawFloor();
 		drawControlBoard();
@@ -346,14 +351,14 @@ public class Cockpit {
 	}
 
 	private void drawFrame() {
-		/** set material properties **/
+		/* set material properties */
 		float shininess = 1.0f;
 		float[] specular = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float[] colour = { 0.75f, 0.75f, 0.75f, 1.0f };
 
 		Util.material(shininess, specular, colour);
 
-		/** draw everything **/
+		/* draw everything */
 
 		Util.drawRect(v4, v3, v2, v1); // draw front
 		Util.drawRect(v3d, v2d, v2, v3);
@@ -385,14 +390,14 @@ public class Cockpit {
 	}
 
 	public void drawFloor() {
-		/** set material properties **/
+		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
 		float[] colour = { 0.625f, 0.75f, 0.625f, 1.0f };
 
 		Util.material(shininess, specular, colour);
 
-		/** draw everything **/
+		/* draw everything */
 
 		Util.drawRect(v24, v4, v1, v23); // draw floor front
 		Util.drawTri(v23, v1, v6); // draw floor left
@@ -400,20 +405,20 @@ public class Cockpit {
 	}
 
 	public void drawControlBoard() {
-		/** set material properties **/
+		/* set material properties */
 		float shininess = 1.0f;
 		float[] specular = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float[] colour = { 0.75f, 0.75f, 0.75f, 1.0f };
 
 		Util.material(shininess, specular, colour);
 
-		/** draw everything **/
+		/* draw everything */
 		Util.drawRect(v31, v4, v1, v29); // draw top
 		Util.drawRect(v32, v31, v29, v30); // draw front
 	}
 
 	public void drawButtonBase() {
-		/** set material properties **/
+		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.125f, 0.125f, 0.125f, 1.0f };
 		float[] colour = { 0.3125f, 0.3125f, 0.3125f, 1.0f };
@@ -424,7 +429,7 @@ public class Cockpit {
 		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
 				FloatBuffer.wrap(colour));
 
-		/** draw everything **/
+		/* draw everything */
 		Util.drawRect(v36, v35, v34, v33); // draw bottom
 		Util.drawRect(v40, v39, v38, v37); // draw top
 		Util.drawRect(v40, v37, v33, v36); // draw front
@@ -433,17 +438,77 @@ public class Cockpit {
 	}
 
 	public void drawButton() {
-		/** set material properties **/
+		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
 		float[] colour = { 1.0f, 0.0f, 0.0f, 1.0f };
 
 		Util.material(shininess, specular, colour);
+		
+		/* declare button properties */
+		float buttonHeight = 0.1f * buttonBaseHeight;
+		float buttonDepth = 8 * buttonHeight;
+		float buttonExtendX = 2 * buttonHeight;
+		
+		/* declare button vertexes */
+		// bottom vertexes
+		// left
+		Vertex vb1 = new Vertex(-buttonHeight, 0, buttonHeight);
+		//  right
+		Vertex vb2 = new Vertex(buttonHeight, 0, buttonHeight); 
 
-		/** draw everything **/
-		// draw top
-		Util.drawRect(vb7d, vb6d, vb6, vb7);
+		Vertex vb1d = new Vertex(-buttonHeight, 0, -buttonHeight);
+		Vertex vb2d = new Vertex(buttonHeight, 0, -buttonHeight);
+		
+		// middle vertexes
+		// left
+		Vertex vb3 = new Vertex(-buttonHeight, buttonDepth, buttonHeight);
+		// right
+		Vertex vb4 = new Vertex(buttonHeight, buttonDepth, buttonHeight);
 
+		Vertex vb3d = new Vertex(-buttonHeight, buttonDepth, -buttonHeight);
+		Vertex vb4d = new Vertex(buttonHeight, buttonDepth, -buttonHeight);
+		
+		// top vertexes
+		// bottom left
+		Vertex vb5 = new Vertex(-buttonHeight - buttonExtendX, buttonDepth,
+				buttonHeight);
+		// top left
+		Vertex vb6 = new Vertex(-buttonHeight - buttonExtendX, buttonDepth
+				+ buttonHeight * 2, buttonHeight); 
+		// top right
+		Vertex vb7 = new Vertex(buttonHeight + buttonExtendX, buttonDepth
+				+ buttonHeight * 2, buttonHeight);
+		// bottom right
+		Vertex vb8 = new Vertex(buttonHeight + buttonExtendX, buttonDepth,
+				buttonHeight);
+
+		Vertex vb5d = new Vertex(-buttonHeight - buttonExtendX,
+				buttonDepth, buttonHeight - buttonHeight * 2);
+		Vertex vb6d = new Vertex(-buttonHeight - buttonExtendX, buttonDepth
+				+ buttonHeight, buttonHeight - buttonHeight * 2);
+		Vertex vb7d = new Vertex(buttonHeight + buttonExtendX, buttonDepth
+				+ buttonHeight, buttonHeight - buttonHeight * 2);
+		Vertex vb8d = new Vertex(buttonHeight + buttonExtendX, buttonDepth,
+				buttonHeight - buttonHeight * 2);
+
+		/* draw everything */
+		// draw sides
+		// bottom left
+		Util.drawRect(vb3d, vb1d, vb1, vb3);
+		// top left
+		Util.drawRect(vb6d, vb5d, vb5, vb6);
+		// bottom right
+		Util.drawRect(vb4d, vb4, vb2, vb2d);
+		// top right
+		Util.drawRect(vb8d, vb7d, vb7, vb8);
+		
+		// draw middle bottom sides
+		// left
+		Util.drawRect(vb5d, vb3d, vb3, vb5);
+		// right
+		Util.drawRect(vb8d, vb8, vb4, vb4d);
+		
 		// draw front
 		GL11.glBegin(GL11.GL_POLYGON);
 		new Normal(vb6.toVector(), vb1.toVector(), vb2.toVector(),
@@ -457,6 +522,9 @@ public class Cockpit {
 		vb1.submit();
 		vb2.submit();
 		GL11.glEnd();
+		
+		// draw top side
+		Util.drawRect(vb7d, vb6d, vb6, vb7);
 	}
 
 	public void animButton(float mod) {
