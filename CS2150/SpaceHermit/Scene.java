@@ -239,6 +239,7 @@ public class Scene extends GraphicsLab {
 					newSkybox();
 				} else {
 					increaseBob((float) (tick + startStallTickLimit) / (startStallTickLimit + fadeInTickLimit));
+					pov = povMax - ratio * (povMax - povMin);
 					// increase global ambience and alpha of white screen
 					currentAmbient = ratio * (1.0f - globalAmbient)
 							+ globalAmbient;
