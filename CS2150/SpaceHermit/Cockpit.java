@@ -17,12 +17,14 @@ public class Cockpit {
 	private float chargeTickLimit = 100;
 	// 'r' mode, how long it takes the lever to return to it's rest position
 	private float restTickLimit = chargeTickLimit * 4;
+	// how many times the red light flashes when the lever is charging
+	private int amountOfFlashes = 10;
 
 	/* declare chasis variables */
 	// the y displacement of the whole cockpit
 	private float displaceY = -12f;
 	// front properties
-	private float frontDist = -64f;
+	private float frontDist = -56f;
 	private float frontWidth = 0.5f;
 	private float frontWidth2 = 2 * frontWidth;
 	private float frontHeight = 12f;
@@ -46,19 +48,19 @@ public class Cockpit {
 	private float middleFrontZMod = 0.75f;
 	// control board properties
 	private float controlMod = 0.75f;
-	// button base properties
-	private float buttonBaseHeight = 4f;
-	private float buttonBaseWidth = 2f;
-	private float buttonBaseDepth = 0.5f;
-	private float buttonBaseInwardMod = 0.75f;
-	private float buttonBaseMod = 0.85f;
-	// button positioning properties
-	private float buttonY = -frontWidth + displaceY;
-	private float buttonZMod = 0.5f;
-	private float buttonZMid = frontDist * buttonBaseMod;
-	private float buttonRotationMod = 35.0f;
-	private float buttonZ;
-	private float buttonRotation;
+	// lever base properties
+	private float leverBaseHeight = 4f;
+	private float leverBaseWidth = 2f;
+	private float leverBaseDepth = 0.5f;
+	private float leverBaseInwardMod = 0.75f;
+	private float leverBaseMod = 0.85f;
+	// lever positioning properties
+	private float leverY = -frontWidth + displaceY;
+	private float leverZMod = 0.5f;
+	private float leverZMid = frontDist * leverBaseMod;
+	private float leverRotationMod = 35.0f;
+	private float leverZ;
+	private float leverRotation;
 
 	/* declare vertexes of cockpit */
 	// nb: letter 'd' stands for an "in-depth" version of the vertex with the
@@ -247,53 +249,53 @@ public class Cockpit {
 	private Vertex v32 = new Vertex(controlTotalX, controlTotalY - frontWidth2 * 2,
 			controlTotalZ);
 
-	/* button base bottom vertexes */
+	/* lever base bottom vertexes */
 	// calculate total y displacement of the control board
-	private float buttonBaseTotalY = -frontWidth + displaceY - bottomY
-			* buttonBaseMod;
+	private float leverBaseTotalY = -frontWidth + displaceY - bottomY
+			* leverBaseMod;
 	// calculate total z displacement of control board
-	private float buttonBaseTotalZ = buttonBaseMod * frontDist;
+	private float leverBaseTotalZ = leverBaseMod * frontDist;
 
 	// bottom left
-	private Vertex v33 = new Vertex(-buttonBaseWidth, buttonBaseTotalY,
-			buttonBaseTotalZ + buttonBaseHeight);
+	private Vertex v33 = new Vertex(-leverBaseWidth, leverBaseTotalY,
+			leverBaseTotalZ + leverBaseHeight);
 	// top left
-	private Vertex v34 = new Vertex(-buttonBaseWidth, buttonBaseTotalY,
-			buttonBaseTotalZ - buttonBaseHeight);
+	private Vertex v34 = new Vertex(-leverBaseWidth, leverBaseTotalY,
+			leverBaseTotalZ - leverBaseHeight);
 	// top right
-	private Vertex v35 = new Vertex(buttonBaseWidth, buttonBaseTotalY,
-			buttonBaseTotalZ - buttonBaseHeight);
+	private Vertex v35 = new Vertex(leverBaseWidth, leverBaseTotalY,
+			leverBaseTotalZ - leverBaseHeight);
 	// bottom right
-	private Vertex v36 = new Vertex(buttonBaseWidth, buttonBaseTotalY,
-			buttonBaseTotalZ + buttonBaseHeight);
+	private Vertex v36 = new Vertex(leverBaseWidth, leverBaseTotalY,
+			leverBaseTotalZ + leverBaseHeight);
 
-	/* button base top vertexes */
-	// calculate total x displacement for top of button base
-	private float buttonBaseTopTotalX = buttonBaseWidth * buttonBaseInwardMod;
+	/* lever base top vertexes */
+	// calculate total x displacement for top of lever base
+	private float leverBaseTopTotalX = leverBaseWidth * leverBaseInwardMod;
 	// calculate total y displacement of the control board
-	private float buttonBaseTopTotalY = buttonBaseTotalY + buttonBaseDepth;
+	private float leverBaseTopTotalY = leverBaseTotalY + leverBaseDepth;
 	
 	// bottom left
-	private Vertex v37 = new Vertex(-buttonBaseTopTotalX, buttonBaseTopTotalY,
-			buttonBaseTotalZ + buttonBaseHeight);
+	private Vertex v37 = new Vertex(-leverBaseTopTotalX, leverBaseTopTotalY,
+			leverBaseTotalZ + leverBaseHeight);
 	// top left
-	private Vertex v38 = new Vertex(-buttonBaseTopTotalX, buttonBaseTopTotalY,
-			buttonBaseTotalZ - buttonBaseHeight);
+	private Vertex v38 = new Vertex(-leverBaseTopTotalX, leverBaseTopTotalY,
+			leverBaseTotalZ - leverBaseHeight);
 	// top right
-	private Vertex v39 = new Vertex(buttonBaseTopTotalX, buttonBaseTopTotalY,
-			buttonBaseTotalZ - buttonBaseHeight);
+	private Vertex v39 = new Vertex(leverBaseTopTotalX, leverBaseTopTotalY,
+			leverBaseTotalZ - leverBaseHeight);
 	// bottom right
-	private Vertex v40 = new Vertex(buttonBaseTopTotalX, buttonBaseTopTotalY,
-			buttonBaseTotalZ + buttonBaseHeight);
+	private Vertex v40 = new Vertex(leverBaseTopTotalX, leverBaseTopTotalY,
+			leverBaseTotalZ + leverBaseHeight);
 
 	/**
-	 * Construct cockpit with default values for button properties, and modify tick limits to adjust with the animation scale.
+	 * Construct cockpit with default values for lever properties, and modify tick limits to adjust with the animation scale.
 	 * @param animationScale the animation scale desired by the instantiating class
 	 */
 	public Cockpit(float animationScale) {
-		/* set default values for button position */
-		buttonZ = buttonZMid + buttonZMod;
-		buttonRotation = buttonRotationMod;
+		/* set default values for lever position */
+		leverZ = leverZMid + leverZMod;
+		leverRotation = leverRotationMod;
 		/* modify tick limits with animation scale */
 		chargeTickLimit = chargeTickLimit * animationScale;
 		restTickLimit = restTickLimit * animationScale;
@@ -322,27 +324,35 @@ public class Cockpit {
 	 * @return boolean value that tells the instantiating class that the warp protocol has been activated.
 	 */
 	protected boolean updateScene() {
+		// checks what modes are active if any
 		switch (mode) {
-		case 'c':
-			animButton(cos((float) tick / chargeTickLimit));
+		case 'c': // lever charging
+			
 			if (tick > chargeTickLimit) {
+				// change mode to lever reset
 				mode = 'r';
 				tickReset();
+				// tell initiating class that warp protocol has been activated
 				return true;
 			} else {
+				// animate lever
+				animLever(chargeTickLimit, 0);
 				tick++;
 			}
 			break;
-		case 'r':
-			animButton(cos((float) tick / restTickLimit + 1));
+		case 'r': // lever reset
 			if (tick > restTickLimit) {
+				// change mode to default
 				mode = 'd';
 				tickReset();
 			} else {
+				// animate lever
+				animLever(restTickLimit, 1);
 				tick++;
 			}
 			break;
 		}
+		// tell initiating class that warp protocol has not been activated
 		return false;
 	}
 
@@ -356,13 +366,17 @@ public class Cockpit {
 		drawFrame();
 		drawFloor();
 		drawControlBoard();
-		drawButtonBase();
-
-		GL11.glTranslatef(0, buttonY, buttonZ);
-		GL11.glRotatef(buttonRotation, 1.0f, 0.0f, 0.0f);
-		drawButton();
+		drawLeverBase();
+		
+		/* translate, rotate and draw lever */
+		GL11.glTranslatef(0, leverY, leverZ);
+		GL11.glRotatef(leverRotation, 1.0f, 0.0f, 0.0f);
+		drawLever();
 	}
 
+	/**
+	 * Draw the cockpit's frame.
+	 */
 	private void drawFrame() {
 		/* set material properties */
 		float shininess = 1.0f;
@@ -372,36 +386,50 @@ public class Cockpit {
 		Util.material(shininess, specular, colour);
 
 		/* draw everything */
-
-		Util.drawRect(v4, v3, v2, v1); // draw front
+		// draw front
+		Util.drawRect(v4, v3, v2, v1);
 		Util.drawRect(v3d, v2d, v2, v3);
 
-		Util.drawRect(v6, v1, v2, v5); // draw bottom left
+		// draw bottom left
+		Util.drawRect(v6, v1, v2, v5);
 		Util.drawRect(v5d, v5, v2, v2d);
-		Util.drawRect(v8, v7, v3, v4); // draw bottom right
+		// draw bottom right
+		Util.drawRect(v8, v7, v3, v4);
 		Util.drawRect(v7d, v3d, v3, v7);
-
-		Util.drawRect(v11, v2, v9, v10); // draw middle left
+		
+		// draw middle left
+		Util.drawRect(v11, v2, v9, v10);
 		Util.drawRect(v10d, v10, v9, v9d);
-		Util.drawRect(v14, v13, v12, v3); // draw middle right
+		// draw middle right
+		Util.drawRect(v14, v13, v12, v3);
 		Util.drawRect(v13d, v12d, v12, v13);
 
-		Util.drawRect(v16, v11, v10, v15); // draw middle-top left
-		Util.drawRect(v18, v17, v13, v14); // draw middle-top right
+		// draw middle-top left
+		Util.drawRect(v16, v11, v10, v15);
+		// draw middle-top right
+		Util.drawRect(v18, v17, v13, v14); 
 
-		Util.drawRect(v20, v19, v16, v15); // draw top left side
+		// draw top left side
+		Util.drawRect(v20, v19, v16, v15); 
 		Util.drawRect(v20d, v20, v15, v15d);
-		Util.drawRect(v22, v17, v18, v21); // draw top right side
+		// draw top right side
+		Util.drawRect(v22, v17, v18, v21); 
 		Util.drawRect(v22d, v17d, v17, v22);
 
-		Util.drawRect(v28, v27, v26, v25); // draw middle front
+		// draw middle front
+		Util.drawRect(v28, v27, v26, v25); 
 		Util.drawRect(v27d, v26d, v26, v27);
-		Util.drawRect(v26, v15, v10, v25); // draw middle front left
+		// draw middle front left
+		Util.drawRect(v26, v15, v10, v25); 
 		Util.drawRect(v26d, v15d, v15, v26);
-		Util.drawRect(v28, v13, v17, v27); // draw middle front right
+		// draw middle front right
+		Util.drawRect(v28, v13, v17, v27); 
 		Util.drawRect(v27d, v27, v17, v17d);
 	}
 
+	/**
+	 * Draw the cockpit's floor.
+	 */
 	public void drawFloor() {
 		/* set material properties */
 		float shininess = 0.0f;
@@ -411,12 +439,17 @@ public class Cockpit {
 		Util.material(shininess, specular, colour);
 
 		/* draw everything */
-
-		Util.drawRect(v24, v4, v1, v23); // draw floor front
-		Util.drawTri(v23, v1, v6); // draw floor left
-		Util.drawTri(v24, v8, v4); // draw floor right
+		// draw floor front
+		Util.drawRect(v24, v4, v1, v23);
+		// draw floor left
+		Util.drawTri(v23, v1, v6);
+		// draw floor right
+		Util.drawTri(v24, v8, v4); 
 	}
 
+	/**
+	 * Draw the control board.
+	 */
 	public void drawControlBoard() {
 		/* set material properties */
 		float shininess = 1.0f;
@@ -426,31 +459,40 @@ public class Cockpit {
 		Util.material(shininess, specular, colour);
 
 		/* draw everything */
-		Util.drawRect(v31, v4, v1, v29); // draw top
-		Util.drawRect(v32, v31, v29, v30); // draw front
+		// draw top
+		Util.drawRect(v31, v4, v1, v29);
+		// draw front
+		Util.drawRect(v32, v31, v29, v30); 
 	}
 
-	public void drawButtonBase() {
+	/**
+	 * Draw the base of the lever.
+	 */
+	public void drawLeverBase() {
 		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.125f, 0.125f, 0.125f, 1.0f };
 		float[] colour = { 0.3125f, 0.3125f, 0.3125f, 1.0f };
 
-		GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, shininess);
-		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR,
-				FloatBuffer.wrap(specular));
-		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE,
-				FloatBuffer.wrap(colour));
+		Util.material(shininess, specular, colour);
 
 		/* draw everything */
-		Util.drawRect(v36, v35, v34, v33); // draw bottom
-		Util.drawRect(v40, v39, v38, v37); // draw top
-		Util.drawRect(v40, v37, v33, v36); // draw front
-		Util.drawRect(v38, v34, v33, v37); // draw left
-		Util.drawRect(v40, v36, v35, v39); // draw right
+		// draw bottom
+		Util.drawRect(v36, v35, v34, v33);
+		// draw top
+		Util.drawRect(v40, v39, v38, v37);
+		// draw front
+		Util.drawRect(v40, v37, v33, v36);
+		// draw left
+		Util.drawRect(v38, v34, v33, v37);
+		// draw right
+		Util.drawRect(v40, v36, v35, v39); 
 	}
 
-	public void drawButton() {
+	/**
+	 * Draw the lever.
+	 */
+	public void drawLever() {
 		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
@@ -458,52 +500,52 @@ public class Cockpit {
 
 		Util.material(shininess, specular, colour);
 		
-		/* declare button properties */
-		float buttonHeight = 0.1f * buttonBaseHeight;
-		float buttonDepth = 8 * buttonHeight;
-		float buttonExtendX = 2 * buttonHeight;
+		/* declare lever properties */
+		float leverHeight = 0.1f * leverBaseHeight;
+		float leverDepth = 8 * leverHeight;
+		float leverExtendX = 2 * leverHeight;
 		
-		/* declare button vertexes */
+		/* declare lever vertexes */
 		// bottom vertexes
 		// left
-		Vertex vb1 = new Vertex(-buttonHeight, 0, buttonHeight);
+		Vertex vb1 = new Vertex(-leverHeight, 0, leverHeight);
 		//  right
-		Vertex vb2 = new Vertex(buttonHeight, 0, buttonHeight); 
+		Vertex vb2 = new Vertex(leverHeight, 0, leverHeight); 
 
-		Vertex vb1d = new Vertex(-buttonHeight, 0, -buttonHeight);
-		Vertex vb2d = new Vertex(buttonHeight, 0, -buttonHeight);
+		Vertex vb1d = new Vertex(-leverHeight, 0, -leverHeight);
+		Vertex vb2d = new Vertex(leverHeight, 0, -leverHeight);
 		
 		// middle vertexes
 		// left
-		Vertex vb3 = new Vertex(-buttonHeight, buttonDepth, buttonHeight);
+		Vertex vb3 = new Vertex(-leverHeight, leverDepth, leverHeight);
 		// right
-		Vertex vb4 = new Vertex(buttonHeight, buttonDepth, buttonHeight);
+		Vertex vb4 = new Vertex(leverHeight, leverDepth, leverHeight);
 
-		Vertex vb3d = new Vertex(-buttonHeight, buttonDepth, -buttonHeight);
-		Vertex vb4d = new Vertex(buttonHeight, buttonDepth, -buttonHeight);
+		Vertex vb3d = new Vertex(-leverHeight, leverDepth, -leverHeight);
+		Vertex vb4d = new Vertex(leverHeight, leverDepth, -leverHeight);
 		
 		// top vertexes
 		// bottom left
-		Vertex vb5 = new Vertex(-buttonHeight - buttonExtendX, buttonDepth,
-				buttonHeight);
+		Vertex vb5 = new Vertex(-leverHeight - leverExtendX, leverDepth,
+				leverHeight);
 		// top left
-		Vertex vb6 = new Vertex(-buttonHeight - buttonExtendX, buttonDepth
-				+ buttonHeight * 2, buttonHeight); 
+		Vertex vb6 = new Vertex(-leverHeight - leverExtendX, leverDepth
+				+ leverHeight * 2, leverHeight); 
 		// top right
-		Vertex vb7 = new Vertex(buttonHeight + buttonExtendX, buttonDepth
-				+ buttonHeight * 2, buttonHeight);
+		Vertex vb7 = new Vertex(leverHeight + leverExtendX, leverDepth
+				+ leverHeight * 2, leverHeight);
 		// bottom right
-		Vertex vb8 = new Vertex(buttonHeight + buttonExtendX, buttonDepth,
-				buttonHeight);
+		Vertex vb8 = new Vertex(leverHeight + leverExtendX, leverDepth,
+				leverHeight);
 
-		Vertex vb5d = new Vertex(-buttonHeight - buttonExtendX,
-				buttonDepth, buttonHeight - buttonHeight * 2);
-		Vertex vb6d = new Vertex(-buttonHeight - buttonExtendX, buttonDepth
-				+ buttonHeight, buttonHeight - buttonHeight * 2);
-		Vertex vb7d = new Vertex(buttonHeight + buttonExtendX, buttonDepth
-				+ buttonHeight, buttonHeight - buttonHeight * 2);
-		Vertex vb8d = new Vertex(buttonHeight + buttonExtendX, buttonDepth,
-				buttonHeight - buttonHeight * 2);
+		Vertex vb5d = new Vertex(-leverHeight - leverExtendX,
+				leverDepth, leverHeight - leverHeight * 2);
+		Vertex vb6d = new Vertex(-leverHeight - leverExtendX, leverDepth
+				+ leverHeight, leverHeight - leverHeight * 2);
+		Vertex vb7d = new Vertex(leverHeight + leverExtendX, leverDepth
+				+ leverHeight, leverHeight - leverHeight * 2);
+		Vertex vb8d = new Vertex(leverHeight + leverExtendX, leverDepth,
+				leverHeight - leverHeight * 2);
 
 		/* draw everything */
 		// draw sides
@@ -540,16 +582,24 @@ public class Cockpit {
 		Util.drawRect(vb7d, vb6d, vb6, vb7);
 	}
 
-	public void animButton(float mod) {
-		buttonZ = buttonZMid + mod * buttonZMod;
-		buttonRotation = mod * buttonRotationMod;
+	/**
+	 * Change z position and rotation of lever depending on the tick to current tick limit ratio.
+	 * 
+	 * @param tickLimit the current tick limit
+	 * @param mode whether increasing (mode = 0) or decreasing (mode = 1) values
+	 */
+	public void animLever(float tickLimit, int mode) {
+		// use a cosine function to simulate natural movement of how a human would push a lever
+		double halfRadians = (double) (tick / tickLimit + mode) * Math.PI;
+		float mod = (float) Math.cos(halfRadians);
+		// adjust z position and rotation depending on found modification value
+		leverZ = leverZMid + mod * leverZMod;
+		leverRotation = mod * leverRotationMod;
 	}
 
-	public float cos(float ratio) {
-		double radians = ratio * Math.PI;
-		return (float) Math.cos(radians);
-	}
-
+	/**
+	 * Reset the tick count to 0.
+	 */
 	public void tickReset() {
 		tick = 0;
 	}

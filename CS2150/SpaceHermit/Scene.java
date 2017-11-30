@@ -59,11 +59,9 @@ public class Scene extends GraphicsLab {
 	// 'i' mode, fades scene into warp
 	private float fadeInTickLimit = 100 * getAnimationScale();
 	// 'w' mode, warp active and scene is fully bright
-	private float warpingTickLimit = 50 * getAnimationScale();
+	private float warpingTickLimit = 200 * getAnimationScale();
 	// 'o' mode, fades scene out of warp
 	private float fadeOutTickLimit = 100 * getAnimationScale();
-	// 'e' mode, smooths out pov reset
-	private float endStallTickLimit = 100 * getAnimationScale();
 	// default and current values of ambient lighting
 	private float globalAmbient = 0.125f;
 	private float currentAmbient;
@@ -80,7 +78,7 @@ public class Scene extends GraphicsLab {
 	 */
 	private Cockpit cockpit;
 	
-	/* declare cockpit bobbing variables */
+	/* declare cockpit shaking variables */
 	// amplitude parameters
 	private float ampMaxDefault = 0.5f;
 	private float ampWarpMax = 4.0f;
@@ -89,9 +87,9 @@ public class Scene extends GraphicsLab {
 	private float periodDefault = 500.0f * getAnimationScale();
 	private float period;
 	// current translation parameters
-	private float bobX = 0.0f;
-	private float bobY = 0.0f;
-	private float bobZ = 0.0f;
+	private float shakeX = 0.0f;
+	private float shakeY = 0.0f;
+	private float shakeZ = 0.0f;
 	// current tick
 	private int xTick = 0;
 	private int yTick = 0;
@@ -125,9 +123,9 @@ public class Scene extends GraphicsLab {
 		// constructor so the cockpit's animations runs in-sync with scene
 		cockpit = new Cockpit(getAnimationScale());
 
-		// sets random values for bobbing effect
-		resetBob();
-		initBob();
+		// sets random values for shakebing effect
+		resetShake();
+		initShake();
 		
 		// loads skyboxes, and set a random one as current
 		skyboxes = loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
@@ -169,36 +167,23 @@ public class Scene extends GraphicsLab {
 
 		if (!warping) {
 			// checks what non-warp modes are active if any
-			switch (mode) {
-			case 'o': // fade out
+			if(mode == 'o') { // fade out
 				ratio = getRatio(fadeOutTickLimit);
 				if (ratio > 1) {
-					// if fade out has ended, change mode to end stall
-					mode = 'e';
+					// change mode to default
+					mode = 'd';
 					tickReset();
 					// set global ambient lighting to it's default value
 					resetFade();
+					// reset pov to default value
+					pov = povMax;
 				} else {
 					// else gradually decrease global ambience and alpha of
 					// white screen
 					currentAmbient = 1.0f - ratio * (1.0f - globalAmbient);
 					alpha = 1.0f - ratio;
-				}
-				break;
-			case 'e': // end stall
-				ratio = getRatio(endStallTickLimit);
-				if (ratio > 1) {
-					// if end stall has ended, change to default mode
-					mode = 'd';
-					tickReset();
-					// reset pov to default value
-					pov = povMax;
-				} else {
-					// else gradually increase pov to default value
 					pov = povMin + ratio * (povMax - povMin);
 				}
-				break;
-
 			}
 
 			// updates cockpit, value returned tells scene whether warping has
@@ -216,19 +201,18 @@ public class Scene extends GraphicsLab {
 			case 's': // start stall
 				ratio = getRatio(startStallTickLimit);
 				if (ratio > 1) {
-					// if start stall has ended, change mode to fade in
+					// change mode to fade in
 					mode = 'i';
 					tickReset();
-					// set pov to it's minimum value
-					pov = povMin;
 				} else {
-					increaseBob((float) tick / (startStallTickLimit + fadeInTickLimit));
+					// gradually increase the amplitude and frequency of shakeing effect
+					increaseShake((float) tick / (startStallTickLimit + fadeInTickLimit));
 				}
 				break;
 			case 'i': // fade in
 				ratio = getRatio(fadeInTickLimit);
 				if (ratio > 1) {
-					// if fade in has ended, change mode to warping
+					// change mode to warping
 					mode = 'w';
 					tickReset();
 					// set ambience to most extreme value
@@ -238,7 +222,9 @@ public class Scene extends GraphicsLab {
 					// change current skybox texture
 					newSkybox();
 				} else {
-					increaseBob((float) (tick + startStallTickLimit) / (startStallTickLimit + fadeInTickLimit));
+					// increase the amplitude and frequency of shakeing effect
+					increaseShake((float) (tick + startStallTickLimit) / (startStallTickLimit + fadeInTickLimit));
+					// gradually decrease
 					pov = povMax - ratio * (povMax - povMin);
 					// increase global ambience and alpha of white screen
 					currentAmbient = ratio * (1.0f - globalAmbient)
@@ -249,8 +235,8 @@ public class Scene extends GraphicsLab {
 			case 'w': // warping
 				ratio = getRatio(warpingTickLimit);
 				if (ratio >= 1) {
-					resetBob();
-					// if warping has ended, change mode to fade out
+					resetShake();
+					// change mode to fade out
 					mode = 'o';
 					tickReset();
 					warping = false;
@@ -259,7 +245,7 @@ public class Scene extends GraphicsLab {
 			}
 		}
 		tick++;
-		nextBob();
+		nextShake();
 	}
 
 	protected void renderScene() {
@@ -276,7 +262,7 @@ public class Scene extends GraphicsLab {
 
 		// draw cockpit
 		GL11.glPushMatrix();
-		GL11.glTranslatef(bobX, bobY, bobZ);
+		GL11.glTranslatef(shakeX, shakeY, shakeZ);
 		cockpit.renderScene();
 		GL11.glPopMatrix();
 
@@ -449,22 +435,22 @@ public class Scene extends GraphicsLab {
 		alpha = 0.0f;
 	}
 	
-	public void resetBob() {
+	public void resetShake() {
 		ampMax = ampMaxDefault;
 		period = periodDefault;
 	}
 	
-	public void initBob() {
+	public void initShake() {
 		xTick = rnd.nextInt(Math.round(period));
 		yTick = rnd.nextInt(Math.round(period));
 		zTick = rnd.nextInt(Math.round(period));
 	}
 	
-	private void nextBob() {
+	private void nextShake() {
 		double rad = 2 * Math.PI;
-		bobX = (float) Math.sin((xTick / period) * rad) * ampMax;
-		bobY = (float) Math.sin((yTick / period) * rad) * ampMax;
-		bobZ = (float) Math.sin((zTick / period) * rad) * ampMax;
+		shakeX = (float) Math.sin((xTick / period) * rad) * ampMax;
+		shakeY = (float) Math.sin((yTick / period) * rad) * ampMax;
+		shakeZ = (float) Math.sin((zTick / period) * rad) * ampMax;
 		if(xTick++ > period) {
 			xTick = 0;
 		}
@@ -477,8 +463,8 @@ public class Scene extends GraphicsLab {
 		
 	}
 	
-	private void increaseBob(float ratio) {
-		ampMax = ampMaxDefault + ratio * ratio * (ampWarpMax - ampMaxDefault);
-		period = periodDefault - ratio * ratio * periodDefault;
+	private void increaseShake(float ratio) {
+		ampMax = ampMaxDefault + ratio * (ampWarpMax - ampMaxDefault);
+		period = periodDefault - ratio * periodDefault;
 	}
 }
