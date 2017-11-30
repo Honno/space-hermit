@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.glu.Sphere;
 import org.newdawn.slick.opengl.Texture;
 
 import GraphicsLab.*;
@@ -59,7 +60,7 @@ public class Scene extends GraphicsLab {
 	// 'i' mode, fades scene into warp
 	private float fadeInTickLimit = 100 * getAnimationScale();
 	// 'w' mode, warp active and scene is fully bright
-	private float warpingTickLimit = 200 * getAnimationScale();
+	private float warpingTickLimit = 100 * getAnimationScale();
 	// 'o' mode, fades scene out of warp
 	private float fadeOutTickLimit = 100 * getAnimationScale();
 	// default and current values of ambient lighting
@@ -80,9 +81,9 @@ public class Scene extends GraphicsLab {
 	
 	/* declare cockpit shaking variables */
 	// amplitude parameters
-	private float ampMaxDefault = 0.5f;
-	private float ampWarpMax = 4.0f;
-	private float ampMax;
+	private float ampDefault = 0.5f;
+	private float ampWarp = 2.0f;
+	private float amp;
 	// period parameters
 	private float periodDefault = 500.0f * getAnimationScale();
 	private float period;
@@ -94,6 +95,9 @@ public class Scene extends GraphicsLab {
 	private int xTick = 0;
 	private int yTick = 0;
 	private int zTick = 0;
+	
+	/*TODO system stuff */
+	private System system;
 
 	/* declare background variables */
 	// positioning values of background plane
@@ -122,6 +126,9 @@ public class Scene extends GraphicsLab {
 		// assigns new instance of cockpit class, passes animation scale in
 		// constructor so the cockpit's animations runs in-sync with scene
 		cockpit = new Cockpit(getAnimationScale());
+		
+		//TODO
+		system = new System(getAnimationScale(), cockpit.getFrontDist(), -bgZ);
 
 		// sets random values for shakebing effect
 		resetShake();
@@ -221,6 +228,8 @@ public class Scene extends GraphicsLab {
 					alpha = 1.0f;
 					// change current skybox texture
 					newSkybox();
+					// change to new randomly generated system
+					system.newSystem();
 				} else {
 					// increase the amplitude and frequency of shakeing effect
 					increaseShake((float) (tick + startStallTickLimit) / (startStallTickLimit + fadeInTickLimit));
@@ -258,6 +267,11 @@ public class Scene extends GraphicsLab {
 		// draw background
 		GL11.glPushMatrix();
 		drawBackground(currentSkybox);
+		GL11.glPopMatrix();
+		
+		// draw system
+		GL11.glPushMatrix();
+		system.renderScene();
 		GL11.glPopMatrix();
 
 		// draw cockpit
@@ -428,7 +442,7 @@ public class Scene extends GraphicsLab {
 	}
 
 	/**
-	 * Sets the current ambient and alpha values to their default state.f
+	 * Sets the current ambient and alpha values to their default state.
 	 */
 	private void resetFade() {
 		currentAmbient = globalAmbient;
@@ -436,7 +450,7 @@ public class Scene extends GraphicsLab {
 	}
 	
 	public void resetShake() {
-		ampMax = ampMaxDefault;
+		amp = ampDefault;
 		period = periodDefault;
 	}
 	
@@ -448,9 +462,9 @@ public class Scene extends GraphicsLab {
 	
 	private void nextShake() {
 		double rad = 2 * Math.PI;
-		shakeX = (float) Math.sin((xTick / period) * rad) * ampMax;
-		shakeY = (float) Math.sin((yTick / period) * rad) * ampMax;
-		shakeZ = (float) Math.sin((zTick / period) * rad) * ampMax;
+		shakeX = (float) Math.sin((xTick / period) * rad) * amp;
+		shakeY = (float) Math.sin((yTick / period) * rad) * amp;
+		shakeZ = (float) Math.sin((zTick / period) * rad) * amp/2;
 		if(xTick++ > period) {
 			xTick = 0;
 		}
@@ -464,7 +478,7 @@ public class Scene extends GraphicsLab {
 	}
 	
 	private void increaseShake(float ratio) {
-		ampMax = ampMaxDefault + ratio * (ampWarpMax - ampMaxDefault);
-		period = periodDefault - ratio * periodDefault;
+		amp = ampDefault + ratio * (ampWarp - ampDefault);
+		period = periodDefault - ratio * ratio * periodDefault;
 	}
 }

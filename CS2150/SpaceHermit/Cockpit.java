@@ -301,7 +301,7 @@ public class Cockpit {
 		restTickLimit = restTickLimit * animationScale;
 	}
 
-	public float getFronDist() {
+	public float getFrontDist() {
 		return frontDist;
 	}
 
