@@ -46,6 +46,10 @@ public class Scene extends GraphicsLab {
 
 	/* declare aspect ratio */
 	private float aspect;
+	
+	/* declare dT time variables */
+	private long lastFrameTime = System.nanoTime();
+	private long dT;
 
 	/* declare warp animation variables */
 	// stores whether the user is warping
@@ -53,15 +57,15 @@ public class Scene extends GraphicsLab {
 	// current mode in animation, 'd' is the default mode
 	private char mode = 'd';
 	// the tick counter for the current animation mode
-	private int tick = 0;
+	private float tick = 0;
 	// 's' mode, before the actual warp begins to provide tension
-	private float startStallTickLimit = 200 * getAnimationScale();
+	private float startStallTickLimit = 8.0f;
 	// 'i' mode, fades scene into warp
-	private float fadeInTickLimit = 100 * getAnimationScale();
+	private float fadeInTickLimit = 2.0f;
 	// 'w' mode, warp active and scene is fully bright
-	private float warpingTickLimit = 200 * getAnimationScale();
+	private float warpingTickLimit = 2.0f;
 	// 'o' mode, fades scene out of warp
-	private float fadeOutTickLimit = 100 * getAnimationScale();
+	private float fadeOutTickLimit = 2.0f;
 	// default and current values of ambient lighting
 	private float globalAmbient = 0.125f;
 	private float currentAmbient;
@@ -72,6 +76,8 @@ public class Scene extends GraphicsLab {
 	private float povMax = 45.0f;
 	private float pov = povMax;
 
+	
+	
 	/*
 	 * declare the cockpit that contains check input, update and draw methods
 	 * for a cockpit object
@@ -84,16 +90,16 @@ public class Scene extends GraphicsLab {
 	private float ampWarpMax = 4.0f;
 	private float ampMax;
 	// period parameters
-	private float periodDefault = 500.0f * getAnimationScale();
+	private float periodDefault = 10.0f;
 	private float period;
 	// current translation parameters
 	private float shakeX = 0.0f;
 	private float shakeY = 0.0f;
 	private float shakeZ = 0.0f;
 	// current tick
-	private int xTick = 0;
-	private int yTick = 0;
-	private int zTick = 0;
+	private float xTick = 0;
+	private float yTick = 0;
+	private float zTick = 0;
 
 	/* declare background variables */
 	// positioning values of background plane
@@ -121,7 +127,7 @@ public class Scene extends GraphicsLab {
 
 		// assigns new instance of cockpit class, passes animation scale in
 		// constructor so the cockpit's animations runs in-sync with scene
-		cockpit = new Cockpit(getAnimationScale());
+		cockpit = new Cockpit();
 
 		// sets random values for shakebing effect
 		resetShake();
@@ -162,6 +168,10 @@ public class Scene extends GraphicsLab {
 	}
 
 	protected void updateScene() {
+		dT = System.nanoTime() - lastFrameTime;
+		lastFrameTime = System.nanoTime();
+		tick();
+		
 		// stores ratio of tick to the tick limit of current animation mode
 		float ratio;
 
@@ -188,7 +198,7 @@ public class Scene extends GraphicsLab {
 
 			// updates cockpit, value returned tells scene whether warping has
 			// been activated
-			warping = cockpit.updateScene();
+			warping = cockpit.updateScene(dT, getAnimationScale());
 
 			// if warp has been activated then change mode to start stall
 			if (warping) {
@@ -243,8 +253,8 @@ public class Scene extends GraphicsLab {
 				}
 				break;
 			}
+			
 		}
-		tick++;
 		nextShake();
 	}
 
@@ -409,6 +419,14 @@ public class Scene extends GraphicsLab {
 		currentSkybox = skyboxes.get(currentSkyboxIndex);
 	}
 
+	private void tick() {
+		float updateTime = (float) ((dT * Math.pow(10, -9)) * getAnimationScale());
+		tick += updateTime;
+		xTick += updateTime;
+		yTick += updateTime;
+		zTick += updateTime;
+	}
+	
 	/**
 	 * Resets the tick count.
 	 */
@@ -441,9 +459,9 @@ public class Scene extends GraphicsLab {
 	}
 	
 	public void initShake() {
-		xTick = rnd.nextInt(Math.round(period));
-		yTick = rnd.nextInt(Math.round(period));
-		zTick = rnd.nextInt(Math.round(period));
+		xTick = rnd.nextFloat() * period;
+		yTick = rnd.nextFloat() * period;
+		zTick = rnd.nextFloat() * period;
 	}
 	
 	private void nextShake() {
@@ -451,14 +469,14 @@ public class Scene extends GraphicsLab {
 		shakeX = (float) Math.sin((xTick / period) * rad) * ampMax;
 		shakeY = (float) Math.sin((yTick / period) * rad) * ampMax;
 		shakeZ = (float) Math.sin((zTick / period) * rad) * ampMax;
-		if(xTick++ > period) {
-			xTick = 0;
+		if(xTick > period) {
+			xTick = 0.0f;
 		}
-		if(yTick++ > period) {
-			yTick = 0;
+		if(yTick > period) {
+			yTick = 0.0f;
 		}
-		if(zTick++ > period) {
-			zTick = 0;
+		if(zTick > period) {
+			zTick = 0.0f;
 		}
 		
 	}
