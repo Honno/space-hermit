@@ -46,24 +46,23 @@ public class Scene extends GraphicsLab {
 
 	/* declare aspect ratio */
 	private float aspect;
-	
-	/* declare dT time variables */
-	private long lastFrameTime = System.nanoTime();
-	private long dT;
 
 	/* declare warp animation variables */
 	// stores whether the user is warping
 	private boolean warping = false;
 	// current mode in animation, 'd' is the default mode
 	private char mode = 'd';
-	// the tick counter for the current animation mode
+	// stores time since last iteration of game loop
+	private long lastFrameTime = System.nanoTime();
+	private long dT;
+	// tick counter for the current animation mode
 	private float tick = 0;
 	// 's' mode, before the actual warp begins to provide tension
-	private float startStallTickLimit = 8.0f;
+	private float startStallTickLimit = 2.0f;
 	// 'i' mode, fades scene into warp
 	private float fadeInTickLimit = 2.0f;
 	// 'w' mode, warp active and scene is fully bright
-	private float warpingTickLimit = 2.0f;
+	private float warpingTickLimit = 1.0f;
 	// 'o' mode, fades scene out of warp
 	private float fadeOutTickLimit = 2.0f;
 	// default and current values of ambient lighting
@@ -76,18 +75,16 @@ public class Scene extends GraphicsLab {
 	private float povMax = 45.0f;
 	private float pov = povMax;
 
-	
-	
 	/*
 	 * declare the cockpit that contains check input, update and draw methods
 	 * for a cockpit object
 	 */
 	private Cockpit cockpit;
-	
+
 	/* declare cockpit shaking variables */
 	// amplitude parameters
 	private float ampMaxDefault = 0.5f;
-	private float ampWarpMax = 4.0f;
+	private float ampWarpMax = 2.0f;
 	private float ampMax;
 	// period parameters
 	private float periodDefault = 10.0f;
@@ -100,6 +97,8 @@ public class Scene extends GraphicsLab {
 	private float xTick = 0;
 	private float yTick = 0;
 	private float zTick = 0;
+	// store double value of 2PI
+	private double rad = 2 * Math.PI;
 
 	/* declare background variables */
 	// positioning values of background plane
@@ -132,18 +131,18 @@ public class Scene extends GraphicsLab {
 		// sets random values for shakebing effect
 		resetShake();
 		initShake();
-		
+
 		// loads skyboxes, and set a random one as current
-		skyboxes = loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
+		skyboxes = Util.loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
 		newSkybox();
 
 		// sets the global ambient lighting to it's default value
 		resetFade();
 
-		// supply OpenGL with the properties for the main light
-		float ambient0[] = { 0.0625f, 0.0625f, 0.0625f, 1.0f };
-		float diffuse0[] = { 0.125f, 0.125f, 0.25f, 1.0f };
-		float position0[] = { 0.0f, 16.0f, -16.0f, 1.0f };
+		/*// supply OpenGL with the properties for the main light
+		float ambient0[] = { 0.0625f, 0.0625f, 0.0625f, 0.0f };
+		float diffuse0[] = { 0.125f, 0.125f, 0.25f, 0.0f };
+		float position0[] = { 0.0f, 0.0f, -64.0f, 1.0f };
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT,
 				FloatBuffer.wrap(ambient0));
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE,
@@ -153,7 +152,7 @@ public class Scene extends GraphicsLab {
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION,
 				FloatBuffer.wrap(position0));
 		// enable the first light
-		GL11.glEnable(GL11.GL_LIGHT0);
+		GL11.glEnable(GL11.GL_LIGHT0);*/
 
 		// enable lighting calculations
 		GL11.glEnable(GL11.GL_LIGHTING);
@@ -171,13 +170,13 @@ public class Scene extends GraphicsLab {
 		dT = System.nanoTime() - lastFrameTime;
 		lastFrameTime = System.nanoTime();
 		tick();
-		
+
 		// stores ratio of tick to the tick limit of current animation mode
 		float ratio;
 
 		if (!warping) {
 			// checks what non-warp modes are active if any
-			if(mode == 'o') { // fade out
+			if (mode == 'o') { // fade out
 				ratio = getRatio(fadeOutTickLimit);
 				if (ratio > 1) {
 					// change mode to default
@@ -215,8 +214,10 @@ public class Scene extends GraphicsLab {
 					mode = 'i';
 					tickReset();
 				} else {
-					// gradually increase the amplitude and frequency of shakeing effect
-					increaseShake((float) tick / (startStallTickLimit + fadeInTickLimit));
+					// gradually increase the amplitude and frequency of
+					// shakeing effect
+					increaseShake((float) tick
+							/ (startStallTickLimit + fadeInTickLimit));
 				}
 				break;
 			case 'i': // fade in
@@ -233,7 +234,8 @@ public class Scene extends GraphicsLab {
 					newSkybox();
 				} else {
 					// increase the amplitude and frequency of shakeing effect
-					increaseShake((float) (tick + startStallTickLimit) / (startStallTickLimit + fadeInTickLimit));
+					increaseShake((float) (tick + startStallTickLimit)
+							/ (startStallTickLimit + fadeInTickLimit));
 					// gradually decrease
 					pov = povMax - ratio * (povMax - povMin);
 					// increase global ambience and alpha of white screen
@@ -253,7 +255,7 @@ public class Scene extends GraphicsLab {
 				}
 				break;
 			}
-			
+
 		}
 		nextShake();
 	}
@@ -300,40 +302,6 @@ public class Scene extends GraphicsLab {
 	}
 
 	/**
-	 * Loads provided images into OpenGL textures.
-	 * 
-	 * @param dir
-	 *            the path to the images
-	 * @param names
-	 *            a array of all the names of the images
-	 * @return an arraylist of the textures that loaded successfully
-	 */
-	private List<Texture> loadTextures(String dir, String[] names) {
-		// initiate arraylist that stores successfully loaded textures
-		List<Texture> textures = new ArrayList<Texture>();
-		// regex pattern that captures the image's type (i.e. png, jpg, etc.)
-		Pattern ext = Pattern.compile("\\.(.+)");
-		// iterates over every image provided to attempt loading as a texture
-		for (String name : names) {
-			try {
-				// applies regex pattern to image name
-				Matcher match = ext.matcher(name);
-				match.find();
-				// loads texture with the path to image generated by the
-				// provided dir value and current name, and provides what is the
-				// image's type using captured regex pattern from name
-				textures.add(loadTexture(dir + "/" + name, match.group(1)
-						.toUpperCase()));
-			} catch (Exception e) {
-				// captures any errors (i.e. no pattern found, path does not
-				// exist, etc.)
-				e.printStackTrace();
-			}
-		}
-		return textures;
-	}
-
-	/**
 	 * Draws a plane to the back of the scene and applies a provided texture to
 	 * it.
 	 * 
@@ -352,10 +320,14 @@ public class Scene extends GraphicsLab {
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getTextureID());
 		// draw back plane
-		Vertex v1 = new Vertex(-bgHeight, -bgHeight, -bgZ); // bottom left
-		Vertex v2 = new Vertex(-bgHeight, bgHeight, -bgZ); // top left
-		Vertex v3 = new Vertex(bgHeight, bgHeight, -bgZ); // top right
-		Vertex v4 = new Vertex(bgHeight, -bgHeight, -bgZ); // bottom right
+		// bottom left
+		Vertex v1 = new Vertex(-bgHeight, -bgHeight, -bgZ);
+		// top left
+		Vertex v2 = new Vertex(-bgHeight, bgHeight, -bgZ);
+		// top right
+		Vertex v3 = new Vertex(bgHeight, bgHeight, -bgZ);
+		// bottom right
+		Vertex v4 = new Vertex(bgHeight, -bgHeight, -bgZ);
 		// draw the plane geometry
 		Util.drawRect(v4, v3, v2, v1);
 		// disables textures and reset any local lighting changes
@@ -383,14 +355,18 @@ public class Scene extends GraphicsLab {
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		// draw back plane to (more than) cover the scene
+		// bottom left
 		Vertex v1 = new Vertex(-displayMode.getWidth(),
-				-displayMode.getHeight(), -1.0f); // bottom left
+				-displayMode.getHeight(), -1.0f);
+		// top left
 		Vertex v2 = new Vertex(-displayMode.getWidth(),
-				displayMode.getHeight(), -1.0f); // top left
+				displayMode.getHeight(), -1.0f);
+		// top right
 		Vertex v3 = new Vertex(displayMode.getWidth(), displayMode.getHeight(),
-				-1.0f); // top right
+				-1.0f);
+		// bottom right
 		Vertex v4 = new Vertex(displayMode.getWidth(),
-				-displayMode.getHeight(), -1.0f); // bottom right
+				-displayMode.getHeight(), -1.0f);
 		// draw the plane geometry
 		Util.drawRect(v4, v3, v2, v1);
 		// disable blending and reset any local lighting changes
@@ -405,6 +381,7 @@ public class Scene extends GraphicsLab {
 	private void newSkybox() {
 		boolean found = false;
 		int index = currentSkyboxIndex;
+
 		// keeps on iterating until a valid skybox index is found with a random
 		// number generator
 		while (!found) {
@@ -419,14 +396,20 @@ public class Scene extends GraphicsLab {
 		currentSkybox = skyboxes.get(currentSkyboxIndex);
 	}
 
+	/**
+	 * Update tick values with the time that has passed since last render call.
+	 */
 	private void tick() {
+		// amount to update by
 		float updateTime = (float) ((dT * Math.pow(10, -9)) * getAnimationScale());
+
+		// update values
 		tick += updateTime;
 		xTick += updateTime;
 		yTick += updateTime;
 		zTick += updateTime;
 	}
-	
+
 	/**
 	 * Resets the tick count.
 	 */
@@ -452,35 +435,41 @@ public class Scene extends GraphicsLab {
 		currentAmbient = globalAmbient;
 		alpha = 0.0f;
 	}
-	
+
+	/**
+	 * Reset the values of the shaking animation (amplitude and period).
+	 */
 	public void resetShake() {
 		ampMax = ampMaxDefault;
 		period = periodDefault;
 	}
-	
+
+	/**
+	 * Start of the x, y and z tick counters in random positions.
+	 */
 	public void initShake() {
 		xTick = rnd.nextFloat() * period;
 		yTick = rnd.nextFloat() * period;
 		zTick = rnd.nextFloat() * period;
+
 	}
-	
+
+	/**
+	 * Calculate the x, y and z translation values of the camera shaked object.
+	 */
 	private void nextShake() {
-		double rad = 2 * Math.PI;
 		shakeX = (float) Math.sin((xTick / period) * rad) * ampMax;
 		shakeY = (float) Math.sin((yTick / period) * rad) * ampMax;
 		shakeZ = (float) Math.sin((zTick / period) * rad) * ampMax;
-		if(xTick > period) {
-			xTick = 0.0f;
-		}
-		if(yTick > period) {
-			yTick = 0.0f;
-		}
-		if(zTick > period) {
-			zTick = 0.0f;
-		}
-		
 	}
-	
+
+	/**
+	 * Increase the shaking effect (increment ampMax and decrement period) using
+	 * the given ratio.
+	 * 
+	 * @param ratio
+	 *            the percentage completion of the animation
+	 */
 	private void increaseShake(float ratio) {
 		ampMax = ampMaxDefault + ratio * (ampWarpMax - ampMaxDefault);
 		period = periodDefault - ratio * periodDefault;

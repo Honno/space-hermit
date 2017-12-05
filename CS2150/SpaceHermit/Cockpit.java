@@ -57,11 +57,375 @@ public class Cockpit {
 	// lever positioning properties
 	private float leverY = -frontWidth + displaceY;
 	private float leverZMod = 0.5f;
-	private float leverZMid = frontDist * leverBaseMod; // - z:40
+	private float leverZMid = frontDist * leverBaseMod;
 	private float leverRotationMod = 35.0f;
 	private float leverZ;
 	private float leverRotation;
+	
+	/**
+	 * Construct cockpit with default values for lever properties, and modify
+	 * tick limits to adjust with the animation scale.
+	 * 
+	 * @param animationScale
+	 *            the animation scale desired by the instantiating class
+	 */
+	public Cockpit() {
+		/* set default values for lever position */
+		leverZ = leverZMid + leverZMod;
+		leverRotation = leverRotationMod;
+		renderLight();
+		GL11.glEnable(GL11.GL_LIGHT0);
+	}
 
+	public float getFronDist() {
+		return frontDist;
+	}
+
+	public float getDisplaceY() {
+		return displaceY;
+	}
+
+	protected void checkSceneInput() {
+		// If in the default animation mode, check whether user has press the
+		// space bar to active the lever charge and subsequently the warp
+		// protocol
+		if (mode == 'd') {
+			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
+				mode = 'c';
+			}
+		}
+	}
+
+	/**
+	 * @return boolean value that tells the instantiating class that the warp
+	 *         protocol has been activated.
+	 */
+	public boolean updateScene(long dT, float animationScale) {
+		// check what modes are active, if any
+		switch (mode) {
+		case 'c': // lever charging
+			if (tick > chargeTickLimit) {
+				// change mode to lever reset
+				mode = 'r';
+				tickReset();
+				// tell initiating class that warp protocol has been activated
+				return true;
+			} else {
+				tick(dT, animationScale);
+				// animate lever
+				animLever(chargeTickLimit, 0);
+			}
+			break;
+		case 'r': // lever reset
+			if (tick > restTickLimit) {
+				// change mode to default
+				mode = 'd';
+				tickReset();
+			} else {
+				tick(dT, animationScale);
+				// animate lever
+				animLever(restTickLimit, 1);
+			}
+			break;
+		}
+		// tell initiating class that warp protocol has not been activated
+		return false;
+	}
+
+	public void renderScene() {
+		/* reset positioning */
+		GL11.glTranslatef(0.0f, 0.0f, 0.0f);
+		GL11.glScalef(1.0f, 1.0f, 1.0f);
+		GL11.glRotatef(0.0f, 0.0f, 0.0f, 0.0f);
+
+		/* draw static objects */
+		drawFrame();
+		drawFloor();
+		drawControlBoard();
+		drawLeverBase();
+		// translate, rotate and draw lever
+		GL11.glTranslatef(0, leverY, leverZ);
+		GL11.glRotatef(leverRotation, 1.0f, 0.0f, 0.0f);
+		drawLever();
+		
+		/* render light */
+		renderLight();
+	}
+
+	/**
+	 * Draw the cockpit's frame.
+	 */
+	private void drawFrame() {
+		/* set material properties */
+		float shininess = 1.0f;
+		float[] specular = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float[] colour = { 0.75f, 0.75f, 0.75f, 1.0f };
+
+		Util.material(shininess, specular, colour);
+
+		/* draw everything */
+		// draw front
+		Util.drawRect(v4, v3, v2, v1);
+		Util.drawRect(v3d, v2d, v2, v3);
+
+		// draw bottom left
+		Util.drawRect(v6, v1, v2, v5);
+		Util.drawRect(v5d, v5, v2, v2d);
+		// draw bottom right
+		Util.drawRect(v8, v7, v3, v4);
+		Util.drawRect(v7d, v3d, v3, v7);
+
+		// draw middle left
+		Util.drawRect(v11, v2, v9, v10);
+		Util.drawRect(v10d, v10, v9, v9d);
+		// draw middle right
+		Util.drawRect(v14, v13, v12, v3);
+		Util.drawRect(v13d, v12d, v12, v13);
+
+		// draw middle-top left
+		Util.drawRect(v16, v11, v10, v15);
+		// draw middle-top right
+		Util.drawRect(v18, v17, v13, v14);
+
+		// draw top left side
+		Util.drawRect(v20, v19, v16, v15);
+		Util.drawRect(v20d, v20, v15, v15d);
+		// draw top right side
+		Util.drawRect(v22, v17, v18, v21);
+		Util.drawRect(v22d, v17d, v17, v22);
+
+		// draw middle front
+		Util.drawRect(v28, v27, v26, v25);
+		Util.drawRect(v27d, v26d, v26, v27);
+		// draw middle front left
+		Util.drawRect(v26, v15, v10, v25);
+		Util.drawRect(v26d, v15d, v15, v26);
+		// draw middle front right
+		Util.drawRect(v28, v13, v17, v27);
+		Util.drawRect(v27d, v27, v17, v17d);
+	}
+
+	/**
+	 * Draw the cockpit's floor.
+	 */
+	public void drawFloor() {
+		/* set material properties */
+		float shininess = 0.0f;
+		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
+		float[] colour = { 0.625f, 0.75f, 0.625f, 1.0f };
+
+		Util.material(shininess, specular, colour);
+
+		/* draw everything */
+		// draw floor front
+		Util.drawRect(v24, v4, v1, v23);
+		// draw floor left
+		Util.drawTri(v23, v1, v6);
+		// draw floor right
+		Util.drawTri(v24, v8, v4);
+	}
+
+	/**
+	 * Draw the control board.
+	 */
+	public void drawControlBoard() {
+		/* set material properties */
+		float shininess = 1.0f;
+		float[] specular = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float[] colour = { 0.75f, 0.75f, 0.75f, 1.0f };
+
+		Util.material(shininess, specular, colour);
+
+		/* draw everything */
+		// draw top
+		Util.drawRect(v31, v4, v1, v29);
+		// draw front
+		Util.drawRect(v32, v31, v29, v30);
+	}
+
+	/**
+	 * Draw the base of the lever.
+	 */
+	public void drawLeverBase() {
+		/* set material properties */
+		float shininess = 0.0f;
+		float[] specular = { 0.125f, 0.125f, 0.125f, 1.0f };
+		float[] colour = { 0.3125f, 0.3125f, 0.3125f, 1.0f };
+
+		Util.material(shininess, specular, colour);
+
+		/* draw everything */
+		// draw bottom
+		Util.drawRect(v36, v35, v34, v33);
+		// draw top
+		Util.drawRect(v40, v39, v38, v37);
+		// draw front
+		Util.drawRect(v40, v37, v33, v36);
+		// draw left
+		Util.drawRect(v38, v34, v33, v37);
+		// draw right
+		Util.drawRect(v40, v36, v35, v39);
+	}
+
+	/**
+	 * Draw the lever.
+	 */
+	public void drawLever() {
+		/* set material properties */
+		float shininess = 0.0f;
+		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
+		float[] colour = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+		Util.material(shininess, specular, colour);
+
+		/* declare lever properties */
+		float leverHeight = 0.1f * leverBaseHeight;
+		float leverDepth = 8 * leverHeight;
+		float leverExtendX = 2 * leverHeight;
+
+		/* declare lever vertexes */
+		// bottom vertexes
+		// left
+		Vertex vb1 = new Vertex(-leverHeight, 0, leverHeight);
+		// right
+		Vertex vb2 = new Vertex(leverHeight, 0, leverHeight);
+
+		Vertex vb1d = new Vertex(-leverHeight, 0, -leverHeight);
+		Vertex vb2d = new Vertex(leverHeight, 0, -leverHeight);
+
+		// middle vertexes
+		// left
+		Vertex vb3 = new Vertex(-leverHeight, leverDepth, leverHeight);
+		// right
+		Vertex vb4 = new Vertex(leverHeight, leverDepth, leverHeight);
+
+		Vertex vb3d = new Vertex(-leverHeight, leverDepth, -leverHeight);
+		Vertex vb4d = new Vertex(leverHeight, leverDepth, -leverHeight);
+
+		// top vertexes
+		// bottom left
+		Vertex vb5 = new Vertex(-leverHeight - leverExtendX, leverDepth,
+				leverHeight);
+		// top left
+		Vertex vb6 = new Vertex(-leverHeight - leverExtendX, leverDepth
+				+ leverHeight * 2, leverHeight);
+		// top right
+		Vertex vb7 = new Vertex(leverHeight + leverExtendX, leverDepth
+				+ leverHeight * 2, leverHeight);
+		// bottom right
+		Vertex vb8 = new Vertex(leverHeight + leverExtendX, leverDepth,
+				leverHeight);
+
+		Vertex vb5d = new Vertex(-leverHeight - leverExtendX, leverDepth,
+				leverHeight - leverHeight * 2);
+		Vertex vb6d = new Vertex(-leverHeight - leverExtendX, leverDepth
+				+ leverHeight, leverHeight - leverHeight * 2);
+		Vertex vb7d = new Vertex(leverHeight + leverExtendX, leverDepth
+				+ leverHeight, leverHeight - leverHeight * 2);
+		Vertex vb8d = new Vertex(leverHeight + leverExtendX, leverDepth,
+				leverHeight - leverHeight * 2);
+
+		/* draw everything */
+		// draw sides
+		// bottom left
+		Util.drawRect(vb3d, vb1d, vb1, vb3);
+		// top left
+		Util.drawRect(vb6d, vb5d, vb5, vb6);
+		// bottom right
+		Util.drawRect(vb4d, vb4, vb2, vb2d);
+		// top right
+		Util.drawRect(vb8d, vb7d, vb7, vb8);
+
+		// draw middle bottom sides
+		// left
+		Util.drawRect(vb5d, vb3d, vb3, vb5);
+		// right
+		Util.drawRect(vb8d, vb8, vb4, vb4d);
+
+		// draw front
+		GL11.glBegin(GL11.GL_POLYGON);
+		// submit normals
+		new Normal(vb6.toVector(), vb1.toVector(), vb2.toVector(),
+				vb7.toVector()).submit();
+		// submit vertexes
+		vb4.submit();
+		vb8.submit();
+		vb7.submit();
+		vb6.submit();
+		vb5.submit();
+		vb3.submit();
+		vb1.submit();
+		vb2.submit();
+		GL11.glEnd();
+
+		// draw top side
+		Util.drawRect(vb7d, vb6d, vb6, vb7);
+	}
+
+	/**
+	 * Change z position and rotation of lever depending on the tick to current
+	 * tick limit ratio.
+	 * 
+	 * @param tickLimit
+	 *            the current tick limit
+	 * @param mode
+	 *            whether increasing (mode = 0) or decreasing (mode = 1) values
+	 */
+	public void animLever(float tickLimit, int mode) {
+		// use a cosine function to simulate natural movement of how a lever
+		// would be move
+		double halfRadians = (double) (tick / tickLimit + mode) * Math.PI;
+		float mod = (float) Math.cos(halfRadians);
+		// adjust z position and rotation depending on found modification value
+		leverZ = leverZMid + mod * leverZMod; // 10 -> 0 -> -10
+		leverRotation = mod * leverRotationMod; // 30 -> 0 -> -30
+	}
+
+	public void renderLight() {
+		float[] ambient;
+		float[] diffuse;
+		float[] position = {0.0f, middleFrontTotalY, 0.0f, 1.0f};
+		
+		if(mode == 'c') {
+			ambient = new float[]{0.25f, 0.25f, 0.5f, 1.0f};
+			diffuse = new float[]{0.125f, 0.125f, 0.25f, 1.0f};
+		} else {
+			ambient = new float[]{0.25f, 0.25f, 0.5f, 1.0f};
+			diffuse = new float[]{0.125f, 0.125f, 0.25f, 1.0f};
+		}
+		
+		
+		
+		
+		
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT,
+				FloatBuffer.wrap(ambient));
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE,
+				FloatBuffer.wrap(diffuse));
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR,
+				FloatBuffer.wrap(diffuse));
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION,
+				FloatBuffer.wrap(position));
+	}
+	
+	/**
+	 * Update tick values with the time that has passed since last render call.
+	 * 
+	 * @param dT
+	 * @param animationScale
+	 */
+	public void tick(long dT, float animationScale) {
+		// update tick with relative change in time
+		tick += (float) ((dT * Math.pow(10, -9)) * animationScale);
+	}
+
+	/**
+	 * Reset the tick count to 0.
+	 */
+	public void tickReset() {
+		tick = 0.0f;
+	}
+	
 	/* declare vertexes of cockpit */
 	// nb: letter 'd' stands for an "in-depth" version of the vertex with the
 	// same number, used to make everything look 3D
@@ -84,7 +448,7 @@ public class Cockpit {
 			+ displaceY, frontDist - frontWidth2);
 	private Vertex v3d = new Vertex(frontHeight + frontWidth, frontWidth
 			+ displaceY, frontDist - frontWidth2);
-
+	
 	/* side bars vertexes */
 	// calculate total x displacement of side bars
 	private float bottomTotalX = bottomXMod * frontHeight;
@@ -287,331 +651,4 @@ public class Cockpit {
 	// bottom right
 	private Vertex v40 = new Vertex(leverBaseTopTotalX, leverBaseTopTotalY,
 			leverBaseTotalZ + leverBaseHeight);
-
-	/**
-	 * Construct cockpit with default values for lever properties, and modify
-	 * tick limits to adjust with the animation scale.
-	 * 
-	 * @param animationScale
-	 *            the animation scale desired by the instantiating class
-	 */
-	public Cockpit() {
-		/* set default values for lever position */
-		leverZ = leverZMid + leverZMod;
-		leverRotation = leverRotationMod;
-		/* modify tick limits with animation scale */
-	}
-
-	public float getFronDist() {
-		return frontDist;
-	}
-
-	public float getDisplaceY() {
-		return displaceY;
-	}
-
-	/**
-	 * If in the default animation mode, check whether user has press the space
-	 * bar to active the lever charge and subsequently the warp protocol.
-	 */
-	protected void checkSceneInput() {
-		if (mode == 'd') {
-			if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
-				mode = 'c';
-			}
-		}
-	}
-
-	/**
-	 * @return boolean value that tells the instantiating class that the warp
-	 *         protocol has been activated.
-	 */
-	public boolean updateScene(long dT, float animationScale) {// checks what modes are active if any
-		switch (mode) {
-		case 'c': // lever charging
-			if (tick > chargeTickLimit) {
-				// change mode to lever reset
-				mode = 'r';
-				tickReset();
-				// tell initiating class that warp protocol has been activated
-				return true;
-			} else {
-				tick(dT, animationScale);
-				// animate lever
-				animLever(chargeTickLimit, 0);
-			}
-			break;
-		case 'r': // lever reset
-			if (tick > restTickLimit) {
-				// change mode to default
-				mode = 'd';
-				tickReset();
-			} else {
-				tick(dT, animationScale);
-				// animate lever
-				animLever(restTickLimit, 1);
-			}
-			break;
-		}
-		
-		// tell initiating class that warp protocol has not been activated
-		return false;
-	}
-
-	public void renderScene() {
-		/* reset positioning */
-		GL11.glTranslatef(0.0f, 0.0f, 0.0f);
-		GL11.glScalef(1.0f, 1.0f, 1.0f);
-		GL11.glRotatef(0.0f, 0.0f, 0.0f, 0.0f);
-
-		/* draw static objects */
-		drawFrame();
-		drawFloor();
-		drawControlBoard();
-		drawLeverBase();
-
-		/* translate, rotate and draw lever */
-		GL11.glTranslatef(0, leverY, leverZ);
-		GL11.glRotatef(leverRotation, 1.0f, 0.0f, 0.0f);
-		drawLever();
-	}
-
-	/**
-	 * Draw the cockpit's frame.
-	 */
-	private void drawFrame() {
-		/* set material properties */
-		float shininess = 1.0f;
-		float[] specular = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float[] colour = { 0.75f, 0.75f, 0.75f, 1.0f };
-
-		Util.material(shininess, specular, colour);
-
-		/* draw everything */
-		// draw front
-		Util.drawRect(v4, v3, v2, v1);
-		Util.drawRect(v3d, v2d, v2, v3);
-
-		// draw bottom left
-		Util.drawRect(v6, v1, v2, v5);
-		Util.drawRect(v5d, v5, v2, v2d);
-		// draw bottom right
-		Util.drawRect(v8, v7, v3, v4);
-		Util.drawRect(v7d, v3d, v3, v7);
-
-		// draw middle left
-		Util.drawRect(v11, v2, v9, v10);
-		Util.drawRect(v10d, v10, v9, v9d);
-		// draw middle right
-		Util.drawRect(v14, v13, v12, v3);
-		Util.drawRect(v13d, v12d, v12, v13);
-
-		// draw middle-top left
-		Util.drawRect(v16, v11, v10, v15);
-		// draw middle-top right
-		Util.drawRect(v18, v17, v13, v14);
-
-		// draw top left side
-		Util.drawRect(v20, v19, v16, v15);
-		Util.drawRect(v20d, v20, v15, v15d);
-		// draw top right side
-		Util.drawRect(v22, v17, v18, v21);
-		Util.drawRect(v22d, v17d, v17, v22);
-
-		// draw middle front
-		Util.drawRect(v28, v27, v26, v25);
-		Util.drawRect(v27d, v26d, v26, v27);
-		// draw middle front left
-		Util.drawRect(v26, v15, v10, v25);
-		Util.drawRect(v26d, v15d, v15, v26);
-		// draw middle front right
-		Util.drawRect(v28, v13, v17, v27);
-		Util.drawRect(v27d, v27, v17, v17d);
-	}
-
-	/**
-	 * Draw the cockpit's floor.
-	 */
-	public void drawFloor() {
-		/* set material properties */
-		float shininess = 0.0f;
-		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
-		float[] colour = { 0.625f, 0.75f, 0.625f, 1.0f };
-
-		Util.material(shininess, specular, colour);
-
-		/* draw everything */
-		// draw floor front
-		Util.drawRect(v24, v4, v1, v23);
-		// draw floor left
-		Util.drawTri(v23, v1, v6);
-		// draw floor right
-		Util.drawTri(v24, v8, v4);
-	}
-
-	/**
-	 * Draw the control board.
-	 */
-	public void drawControlBoard() {
-		/* set material properties */
-		float shininess = 1.0f;
-		float[] specular = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float[] colour = { 0.75f, 0.75f, 0.75f, 1.0f };
-
-		Util.material(shininess, specular, colour);
-
-		/* draw everything */
-		// draw top
-		Util.drawRect(v31, v4, v1, v29);
-		// draw front
-		Util.drawRect(v32, v31, v29, v30);
-	}
-
-	/**
-	 * Draw the base of the lever.
-	 */
-	public void drawLeverBase() {
-		/* set material properties */
-		float shininess = 0.0f;
-		float[] specular = { 0.125f, 0.125f, 0.125f, 1.0f };
-		float[] colour = { 0.3125f, 0.3125f, 0.3125f, 1.0f };
-
-		Util.material(shininess, specular, colour);
-
-		/* draw everything */
-		// draw bottom
-		Util.drawRect(v36, v35, v34, v33);
-		// draw top
-		Util.drawRect(v40, v39, v38, v37);
-		// draw front
-		Util.drawRect(v40, v37, v33, v36);
-		// draw left
-		Util.drawRect(v38, v34, v33, v37);
-		// draw right
-		Util.drawRect(v40, v36, v35, v39);
-	}
-
-	/**
-	 * Draw the lever.
-	 */
-	public void drawLever() {
-		/* set material properties */
-		float shininess = 0.0f;
-		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
-		float[] colour = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-		Util.material(shininess, specular, colour);
-
-		/* declare lever properties */
-		float leverHeight = 0.1f * leverBaseHeight;
-		float leverDepth = 8 * leverHeight;
-		float leverExtendX = 2 * leverHeight;
-
-		/* declare lever vertexes */
-		// bottom vertexes
-		// left
-		Vertex vb1 = new Vertex(-leverHeight, 0, leverHeight);
-		// right
-		Vertex vb2 = new Vertex(leverHeight, 0, leverHeight);
-
-		Vertex vb1d = new Vertex(-leverHeight, 0, -leverHeight);
-		Vertex vb2d = new Vertex(leverHeight, 0, -leverHeight);
-
-		// middle vertexes
-		// left
-		Vertex vb3 = new Vertex(-leverHeight, leverDepth, leverHeight);
-		// right
-		Vertex vb4 = new Vertex(leverHeight, leverDepth, leverHeight);
-
-		Vertex vb3d = new Vertex(-leverHeight, leverDepth, -leverHeight);
-		Vertex vb4d = new Vertex(leverHeight, leverDepth, -leverHeight);
-
-		// top vertexes
-		// bottom left
-		Vertex vb5 = new Vertex(-leverHeight - leverExtendX, leverDepth,
-				leverHeight);
-		// top left
-		Vertex vb6 = new Vertex(-leverHeight - leverExtendX, leverDepth
-				+ leverHeight * 2, leverHeight);
-		// top right
-		Vertex vb7 = new Vertex(leverHeight + leverExtendX, leverDepth
-				+ leverHeight * 2, leverHeight);
-		// bottom right
-		Vertex vb8 = new Vertex(leverHeight + leverExtendX, leverDepth,
-				leverHeight);
-
-		Vertex vb5d = new Vertex(-leverHeight - leverExtendX, leverDepth,
-				leverHeight - leverHeight * 2);
-		Vertex vb6d = new Vertex(-leverHeight - leverExtendX, leverDepth
-				+ leverHeight, leverHeight - leverHeight * 2);
-		Vertex vb7d = new Vertex(leverHeight + leverExtendX, leverDepth
-				+ leverHeight, leverHeight - leverHeight * 2);
-		Vertex vb8d = new Vertex(leverHeight + leverExtendX, leverDepth,
-				leverHeight - leverHeight * 2);
-
-		/* draw everything */
-		// draw sides
-		// bottom left
-		Util.drawRect(vb3d, vb1d, vb1, vb3);
-		// top left
-		Util.drawRect(vb6d, vb5d, vb5, vb6);
-		// bottom right
-		Util.drawRect(vb4d, vb4, vb2, vb2d);
-		// top right
-		Util.drawRect(vb8d, vb7d, vb7, vb8);
-
-		// draw middle bottom sides
-		// left
-		Util.drawRect(vb5d, vb3d, vb3, vb5);
-		// right
-		Util.drawRect(vb8d, vb8, vb4, vb4d);
-
-		// draw front
-		GL11.glBegin(GL11.GL_POLYGON);
-		new Normal(vb6.toVector(), vb1.toVector(), vb2.toVector(),
-				vb7.toVector()).submit();
-		vb4.submit();
-		vb8.submit();
-		vb7.submit();
-		vb6.submit();
-		vb5.submit();
-		vb3.submit();
-		vb1.submit();
-		vb2.submit();
-		GL11.glEnd();
-
-		// draw top side
-		Util.drawRect(vb7d, vb6d, vb6, vb7);
-	}
-
-	/**
-	 * Change z position and rotation of lever depending on the tick to current
-	 * tick limit ratio.
-	 * 
-	 * @param tickLimit
-	 *            the current tick limit
-	 * @param mode
-	 *            whether increasing (mode = 0) or decreasing (mode = 1) values
-	 */
-	public void animLever(float tickLimit, int mode) {
-		// use a cosine function to simulate natural movement of how a human
-		// would push a lever
-		System.out.println(tick);
-		double halfRadians = (double) (tick / tickLimit + mode) * Math.PI;
-		float mod = (float) Math.cos(halfRadians);
-		// adjust z position and rotation depending on found modification value
-		leverZ = leverZMid + mod * leverZMod; // 10 -> 0 -> -10
-		leverRotation = mod * leverRotationMod; // 30 -> 0 -> -30
-	}
-	
-	public void tick(long dT, float animationScale) {
-		tick += (float) ((dT * Math.pow(10, -9)) * animationScale);
-	}
-
-	/**
-	 * Reset the tick count to 0.
-	 */
-	public void tickReset() {
-		tick = 0.0f;
-	}
 }
