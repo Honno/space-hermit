@@ -58,7 +58,7 @@ public class Scene extends GraphicsLab {
 	// tick counter for the current animation mode
 	private float tick = 0;
 	// 's' mode, before the actual warp begins to provide tension
-	private float startStallTickLimit = 2.0f;
+	private float startStallTickLimit = 4.0f;
 	// 'i' mode, fades scene into warp
 	private float fadeInTickLimit = 2.0f;
 	// 'w' mode, warp active and scene is fully bright
@@ -98,7 +98,7 @@ public class Scene extends GraphicsLab {
 	private float yTick = 0;
 	private float zTick = 0;
 	// store double value of 2PI
-	private double rad = 2 * Math.PI;
+	public static double rad = 2 * Math.PI;
 
 	/* declare background variables */
 	// positioning values of background plane

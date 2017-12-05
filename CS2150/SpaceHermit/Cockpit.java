@@ -8,18 +8,6 @@ import GraphicsLab.Normal;
 import GraphicsLab.Vertex;
 
 public class Cockpit {
-	/* declare lever animation variables */
-	// current mode in animation, 'd' is the default mode
-	private char mode = 'd';
-	// the tick counter for the current animation mode
-	private float tick = 0.0f;
-	// 'c' mode, how long it takes the lever to charge up
-	private float chargeTickLimit = 2.0f;
-	// 'r' mode, how long it takes the lever to return to it's rest position
-	private float restTickLimit = chargeTickLimit * 2;
-	// how many times the red light flashes when the lever is charging
-	private int amountOfFlashes = 10;
-
 	/* declare chasis variables */
 	// the y displacement of the whole cockpit
 	private float displaceY = -12f;
@@ -62,6 +50,22 @@ public class Cockpit {
 	private float leverZ;
 	private float leverRotation;
 	
+	/* declare lever animation variables */
+	// current mode in animation, 'd' is the default mode
+	private char mode = 'd';
+	// the tick counter for the current animation mode
+	private float tick = 0.0f;
+	// 'c' mode, how long it takes the lever to charge up
+	private float chargeTickLimit = 4.0f;
+	// 'r' mode, how long it takes the lever to return to it's rest position
+	private float restTickLimit = chargeTickLimit;
+	// how many times the red light flashes when the lever is charging
+	private int amountOfFlashes = 4;
+	// light values
+	private float ambDefault = 0.25f;
+	private float difDefault = 0.125f;
+	private float[] position = {0.0f, displaceY + middleFrontY, 0.0f, 1.0f};
+	
 	/**
 	 * Construct cockpit with default values for lever properties, and modify
 	 * tick limits to adjust with the animation scale.
@@ -73,6 +77,8 @@ public class Cockpit {
 		/* set default values for lever position */
 		leverZ = leverZMid + leverZMod;
 		leverRotation = leverRotationMod;
+		
+		/* render and enable cockpit light */
 		renderLight();
 		GL11.glEnable(GL11.GL_LIGHT0);
 	}
@@ -273,8 +279,8 @@ public class Cockpit {
 	public void drawLever() {
 		/* set material properties */
 		float shininess = 0.0f;
-		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
-		float[] colour = { 1.0f, 0.0f, 0.0f, 1.0f };
+		float[] specular = { 0.5f, 0.25f, 0.25f, 1.0f };
+		float[] colour = { 0.75f, 0.25f, 0.25f, 1.0f };
 
 		Util.material(shininess, specular, colour);
 
@@ -381,22 +387,23 @@ public class Cockpit {
 		leverRotation = mod * leverRotationMod; // 30 -> 0 -> -30
 	}
 
+	/**
+	 * Renders the cockpit light, varying the lighting depending on animation mode.
+	 */
 	public void renderLight() {
-		float[] ambient;
-		float[] diffuse;
-		float[] position = {0.0f, middleFrontTotalY, 0.0f, 1.0f};
+		// initialise red component of lighting
+		float ambRed = ambDefault;
+		float difRed = difDefault;
 		
+		// when in lever charge animation, modify red components ever tick to create flashing effect 
 		if(mode == 'c') {
-			ambient = new float[]{0.25f, 0.25f, 0.5f, 1.0f};
-			diffuse = new float[]{0.125f, 0.125f, 0.25f, 1.0f};
-		} else {
-			ambient = new float[]{0.25f, 0.25f, 0.5f, 1.0f};
-			diffuse = new float[]{0.125f, 0.125f, 0.25f, 1.0f};
+			float scale = (float)  Math.abs((Math.sin((tick / (chargeTickLimit / (amountOfFlashes / 2))) * Scene.rad)));
+			ambRed = ambRed + scale * (0.5f - ambDefault);
+			difRed = difRed + scale * (0.5f - difDefault);
 		}
 		
-		
-		
-		
+		float[] ambient = {ambRed, ambDefault, 2*ambDefault, 1.0f};
+		float[] diffuse = {difRed, difDefault, 2*difDefault, 1.0f};
 		
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT,
 				FloatBuffer.wrap(ambient));
