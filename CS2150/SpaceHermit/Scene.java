@@ -49,7 +49,9 @@ public class Scene extends GraphicsLab {
 
 	/* declare warp animation variables */
 	// stores whether the user is warping
-	private boolean warping = false;
+	private boolean warping = true;
+	// stores whether the user warping animation has finished
+	private boolean warpFinished = true;
 	// current mode in animation, 'd' is the default mode
 	private char mode = 'd';
 	// stores time since last iteration of game loop
@@ -105,8 +107,8 @@ public class Scene extends GraphicsLab {
 	float bgHeight = 64.0f;
 	float bgZ = 96.0f;
 	// path values to access skyboxes
-	private String pckgDir = "SpaceHermit";
-	private String skyboxDir = "skyboxes";
+	public static String pckgDir = "SpaceHermit";
+	private String skyboxDir = "textures";
 	private String[] skyboxNames = { "corona_ft.png", "redeclipse_ft.png",
 			"unnamedspace_ft.jpg", "unnamedspace3_ft.png" };
 	// stores loaded skybox textures
@@ -139,21 +141,6 @@ public class Scene extends GraphicsLab {
 		// sets the global ambient lighting to it's default value
 		resetFade();
 
-		/*// supply OpenGL with the properties for the main light
-		float ambient0[] = { 0.0625f, 0.0625f, 0.0625f, 0.0f };
-		float diffuse0[] = { 0.125f, 0.125f, 0.25f, 0.0f };
-		float position0[] = { 0.0f, 0.0f, -64.0f, 1.0f };
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT,
-				FloatBuffer.wrap(ambient0));
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE,
-				FloatBuffer.wrap(diffuse0));
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR,
-				FloatBuffer.wrap(diffuse0));
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION,
-				FloatBuffer.wrap(position0));
-		// enable the first light
-		GL11.glEnable(GL11.GL_LIGHT0);*/
-
 		// enable lighting calculations
 		GL11.glEnable(GL11.GL_LIGHTING);
 		// ensure that all normals are re-normalised after transformations
@@ -170,6 +157,10 @@ public class Scene extends GraphicsLab {
 		dT = System.nanoTime() - lastFrameTime;
 		lastFrameTime = System.nanoTime();
 		tick();
+		
+		// updates cockpit, value returned tells scene whether warping has
+		// been activated
+		warping = cockpit.updateScene(warpFinished, dT, getAnimationScale());
 
 		// stores ratio of tick to the tick limit of current animation mode
 		float ratio;
@@ -194,19 +185,15 @@ public class Scene extends GraphicsLab {
 					pov = povMin + ratio * (povMax - povMin);
 				}
 			}
-
-			// updates cockpit, value returned tells scene whether warping has
-			// been activated
-			warping = cockpit.updateScene(dT, getAnimationScale());
-
-			// if warp has been activated then change mode to start stall
-			if (warping) {
-				mode = 's';
-				tickReset();
-			}
 		} else {
 			// checks what warping modes are active
 			switch (mode) {
+			case 'd':
+				// if warp has been activated then change mode to start stall
+				mode = 's';
+				tickReset();
+				warpFinished = false;
+				break;
 			case 's': // start stall
 				ratio = getRatio(startStallTickLimit);
 				if (ratio > 1) {
@@ -252,6 +239,7 @@ public class Scene extends GraphicsLab {
 					mode = 'o';
 					tickReset();
 					warping = false;
+					warpFinished = true;
 				}
 				break;
 			}

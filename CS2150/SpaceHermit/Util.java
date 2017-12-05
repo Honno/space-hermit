@@ -1,5 +1,6 @@
 package SpaceHermit;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -82,8 +83,8 @@ public class Util {
 		return textures;
 	}
 
-	public static Texture loadTexture(String path, String imageType)
-			throws Exception {
+	public static Texture loadTexture(String path, String imageType) throws IOException
+			 {
 		Texture tex = TextureLoader.getTexture(imageType,
 				ResourceLoader.getResourceAsStream(path), true);
 		return tex;

@@ -1,5 +1,7 @@
 package SpaceHermit;
 
+import java.io.IOException;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -64,7 +66,9 @@ public class Cockpit {
 	// light values
 	private float ambDefault = 0.25f;
 	private float difDefault = 0.125f;
-	private float[] position = {0.0f, displaceY + middleFrontY, 0.0f, 1.0f};
+	private float[] position = {0.0f, displaceY + middleFrontY, -frontDist, 1.0f};
+	
+	private Hologram hologram;
 	
 	/**
 	 * Construct cockpit with default values for lever properties, and modify
@@ -81,6 +85,9 @@ public class Cockpit {
 		/* render and enable cockpit light */
 		renderLight();
 		GL11.glEnable(GL11.GL_LIGHT0);
+		
+		/* initialise hologram object */
+		hologram = new Hologram();
 	}
 
 	public float getFronDist() {
@@ -106,7 +113,8 @@ public class Cockpit {
 	 * @return boolean value that tells the instantiating class that the warp
 	 *         protocol has been activated.
 	 */
-	public boolean updateScene(long dT, float animationScale) {
+	public boolean updateScene(boolean warpFinished, long dT, float animationScale) {
+		boolean ifCharged = false;
 		// check what modes are active, if any
 		switch (mode) {
 		case 'c': // lever charging
@@ -115,7 +123,7 @@ public class Cockpit {
 				mode = 'r';
 				tickReset();
 				// tell initiating class that warp protocol has been activated
-				return true;
+				ifCharged = true;
 			} else {
 				tick(dT, animationScale);
 				// animate lever
@@ -123,19 +131,26 @@ public class Cockpit {
 			}
 			break;
 		case 'r': // lever reset
-			if (tick > restTickLimit) {
-				// change mode to default
-				mode = 'd';
-				tickReset();
+			if(warpFinished) {
+				if (tick > restTickLimit) {
+					// change mode to default
+					mode = 'd';
+					tickReset();
+				} else {
+					tick(dT, animationScale);
+					// animate lever
+					animLever(restTickLimit, 1);
+				}
+				break;
 			} else {
-				tick(dT, animationScale);
-				// animate lever
-				animLever(restTickLimit, 1);
+				ifCharged = true;
 			}
-			break;
 		}
+		// update hologram animation values
+		hologram.updateScene();
+		
 		// tell initiating class that warp protocol has not been activated
-		return false;
+		return ifCharged;
 	}
 
 	public void renderScene() {
@@ -150,9 +165,16 @@ public class Cockpit {
 		drawControlBoard();
 		drawLeverBase();
 		// translate, rotate and draw lever
+		GL11.glPushMatrix();
 		GL11.glTranslatef(0, leverY, leverZ);
 		GL11.glRotatef(leverRotation, 1.0f, 0.0f, 0.0f);
 		drawLever();
+		GL11.glPopMatrix();
+		// draw hologram
+		GL11.glPushMatrix();
+		GL11.glTranslatef(-frontHeight/2, displaceY + 4.0f, controlMod*frontDist + 4.0f);
+		hologram.renderScene();
+		GL11.glPopMatrix();
 		
 		/* render light */
 		renderLight();

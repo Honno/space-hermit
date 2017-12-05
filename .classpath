@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="CS2150">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/matthew/Projects/space-scene-coursework/LWJGL/native"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="space-scene-coursework/LWJGL/native"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="LWJGL/jar/AppleJavaExtensions.jar"/>
