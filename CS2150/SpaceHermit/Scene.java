@@ -22,9 +22,21 @@ import GraphicsLab.GraphicsLab;
 import GraphicsLab.Vertex;
 
 /**
- * My projects simulates being inside of a space jet. You can push the lever and
- * be warped (FTL travel) to a different, randomly generated place in the
- * universe!
+ * My projects simulates being inside of a space jet.
+ * 
+ * Features:
+ * - The scene "bobs" the cockpit in the x, y and z axis in a natural
+ * way with the use of sinusoidal movement to create a feeling of floating in
+ * space.
+ * - A very nice looking cockpit front. - Translucent, almost-holographic
+ * depictions of the Earth and Moon occupying the cockpit. - The moon orbits the
+ * Earth, with sinusoidal bumps in the y axis to simulate natural fluctuations
+ * of an orbit.
+ * - A lever that animates forward and backwards, using sinusoidal
+ * movement to simulate a "resistance" effect when pushing. - You can push the
+ * lever and start the warp protocol. The shaking and ambience exemplifies, with
+ * the scene fading to a pure white as you travel accross the universe.
+ * 
  * <p>
  * Controls:
  * <ul>
@@ -34,7 +46,7 @@ import GraphicsLab.Vertex;
  * <li>While viewing the scene along the x, y or z axis, use the up and down
  * cursor keys to increase or decrease the viewpoint's distance from the scene
  * origin
- * <li>Press space when the lever is in it's rest position to start the warp
+ * <li>Press the space bar when the lever is in it's rest position to start the warp
  * protocol
  * </ul>
  */
