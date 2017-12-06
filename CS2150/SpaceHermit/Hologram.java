@@ -8,8 +8,6 @@ import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.Sphere;
 import org.newdawn.slick.opengl.Texture;
 
-import com.sun.prism.paint.Color;
-
 import GraphicsLab.Colour;
 
 public class Hologram {
@@ -32,7 +30,7 @@ public class Hologram {
 	private boolean flicker = false;
     private int constant = 24;
     private int exponential = 4;
-    private float shortTime = 0.03125f;
+    private float shortTime = 0.015625f;
     private float nextTime = shortTime;
     private int c = 1;
     private float m = 4.0f;
@@ -86,10 +84,16 @@ public class Hologram {
 				nextTime = shortTime;
 				flickerTick = 0.0f;
 				c = 0;
+				flicker = false;
 				flickerAnim = false;
 			}
-		} else if(start) {
+		} else if(!start && flicker) {
+			flickerTick = 0.0f;
+			c = 0;
 			flickerAnim = true;
+		} else if(start) {
+			flicker = true;
+			
 		}
 		
 		

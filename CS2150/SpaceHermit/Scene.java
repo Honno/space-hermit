@@ -9,17 +9,17 @@
  */
 package SpaceHermit;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.newdawn.slick.opengl.Texture;
 
-import GraphicsLab.*;
+import GraphicsLab.Colour;
+import GraphicsLab.FloatBuffer;
+import GraphicsLab.GraphicsLab;
+import GraphicsLab.Vertex;
 
 /**
  * My projects simulates being inside of a space jet. You can push the lever and

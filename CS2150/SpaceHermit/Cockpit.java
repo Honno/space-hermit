@@ -1,7 +1,5 @@
 package SpaceHermit;
 
-import java.io.IOException;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Cylinder;
@@ -161,7 +159,7 @@ public class Cockpit {
 		}
 		
 		// update hologram animation values
-		boolean startFlicker = warpFinished && mode == 'r' && tick > 0.0125f;
+		boolean startFlicker = warpFinished && mode == 'r' && tick != 0.0f;
 		hologram.updateScene(startFlicker, dT, animationScale);
 		
 		// tell initiating class that warp protocol has not been activated
