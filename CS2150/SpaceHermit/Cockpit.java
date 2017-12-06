@@ -63,8 +63,6 @@ public class Cockpit {
 	private float hologramBaseZ = controlMod * frontDist - 6.0f;
 	private float hologramElevation = 1.5f;
 	
-	
-	
 	/* declare lever animation variables */
 	// current mode in animation, 'd' is the default mode
 	private char mode = 'd';
@@ -80,6 +78,8 @@ public class Cockpit {
 	private float ambDefault = 0.25f;
 	private float difDefault = 0.125f;
 	private float[] position = {0.0f, displaceY + middleFrontY, -frontDist, 1.0f};
+	
+	// vertexes are defined at bottom of file
 	
 	/**
 	 * Construct cockpit with default values for lever properties, and modify

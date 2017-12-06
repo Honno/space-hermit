@@ -28,11 +28,11 @@ public class Hologram {
 	private Cylinder cone;
 	
 	private boolean flicker = false;
-    private int constant = 24;
-    private int exponential = 4;
+    private int constantFlickers = 24;
+    private int exponentialFlickers = 4;
     private float shortTime = 0.015625f;
     private float nextTime = shortTime;
-    private int c = 1;
+    private int counter = 1;
     private float m = 4.0f;
 	
 	private float tick = 0.0f;
@@ -67,29 +67,29 @@ public class Hologram {
 		flickerTick += updateAmount;
 		
 		if(flickerAnim) {
-			if(c <= constant) {
+			if(counter <= constantFlickers) {
 				if(flickerTick > nextTime) {
 					flicker = !flicker;
-					flickerTick = 0.0f;
-					c++;
+					resetFlickerTick();
+					counter++;
 				}
-			} else if (c <= constant + exponential) {
+			} else if (counter <= constantFlickers + exponentialFlickers) {
 				if(flickerTick > nextTime) {
 					flicker = !flicker;
-					nextTime = shortTime * m * m * (c - constant);
-					flickerTick = 0.0f;
-					c++;
+					nextTime = shortTime * m * m * (counter - constantFlickers);
+					resetFlickerTick();
+					counter++;
 				}
 			} else {
 				nextTime = shortTime;
-				flickerTick = 0.0f;
-				c = 0;
+				resetFlickerTick();
+				resetCounter();
 				flicker = false;
 				flickerAnim = false;
 			}
 		} else if(!start && flicker) {
-			flickerTick = 0.0f;
-			c = 0;
+			resetFlickerTick();
+			resetCounter();
 			flickerAnim = true;
 		} else if(start) {
 			flicker = true;
@@ -197,4 +197,13 @@ public class Hologram {
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glPopAttrib();
 	}
+	
+	private void resetFlickerTick() {
+		flickerTick = 0.0f;
+	}
+	
+	private void resetCounter() {
+		counter = 0;
+	}
+	
 }

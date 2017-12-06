@@ -52,8 +52,8 @@ public class Scene extends GraphicsLab {
 	private boolean warpFinished = true;
 	// current mode in animation, 'd' is the default mode
 	private char mode = 'd';
-	// stores time since last iteration of game loop
-	private long lastFrameTime = System.nanoTime();
+	// stores time since last iteration of game render loop
+	private long lastFrameTime;
 	private long dT;
 	// tick counter for the current animation mode
 	private float tick = 0;
@@ -75,10 +75,8 @@ public class Scene extends GraphicsLab {
 	private float povMax = 45.0f;
 	private float pov = povMax;
 
-	/*
-	 * declare the cockpit that contains check input, update and draw methods
-	 * for a cockpit object
-	 */
+	// declare the cockpit that contains check input, update and draw methods
+	// for a cockpit object
 	private Cockpit cockpit;
 
 	/* declare cockpit shaking variables */
@@ -145,6 +143,8 @@ public class Scene extends GraphicsLab {
 		// automatically
 		GL11.glEnable(GL11.GL_NORMALIZE);
 
+		// initialise last frame time with how long program has executed for
+		lastFrameTime = System.nanoTime();
 	}
 
 	protected void checkSceneInput() {
@@ -154,7 +154,9 @@ public class Scene extends GraphicsLab {
 	protected void updateScene() {
 		// find time since last frame, and update tick accordingly
 		dT = System.nanoTime() - lastFrameTime;
+		// assign last frame time with how long program has executed for
 		lastFrameTime = System.nanoTime();
+		// update tick values
 		tick();
 
 		// updates cockpit, value returned tells scene whether warping has
@@ -164,6 +166,7 @@ public class Scene extends GraphicsLab {
 		// stores ratio of tick to the tick limit of current animation mode
 		float ratio;
 
+		// execute non-warping or warping animation modes
 		if (!warping) {
 			// checks what non-warp modes are active if any
 			if (mode == 'o') { // fade out
@@ -175,7 +178,7 @@ public class Scene extends GraphicsLab {
 					resetFade();
 					// reset pov to default value
 					pov = povMax;
-					
+
 					tickReset();
 				} else {
 					// decrease global ambience, and alpha of white screen
@@ -193,7 +196,7 @@ public class Scene extends GraphicsLab {
 				mode = 's';
 				// update warping animation variables
 				warpFinished = false;
-				
+
 				tickReset();
 				break;
 			case 's': // start stall
@@ -201,7 +204,7 @@ public class Scene extends GraphicsLab {
 				if (ratio > 1) {
 					// change mode to fade in
 					mode = 'i';
-					
+
 					tickReset();
 				} else {
 					// increase the amplitude and frequency of shaking effect
@@ -220,7 +223,7 @@ public class Scene extends GraphicsLab {
 					alpha = 1.0f;
 					// change current skybox texture
 					newSkybox();
-					
+
 					tickReset();
 				} else {
 					// increase the amplitude and frequency of shaking effect
@@ -243,17 +246,22 @@ public class Scene extends GraphicsLab {
 					// update warping animation variables
 					warping = false;
 					warpFinished = true;
-					
+
 					tickReset();
 				}
 				break;
 			}
-
 		}
+
+		// find amplitudes of x, y and z shaking effects
 		nextShake();
 	}
 
 	protected void renderScene() {
+		// change the geometry colour to white so that the texture
+		// is bright and details can be seen clearly
+		Colour.WHITE.submit();
+
 		// set the global ambient lighting to use current ambient level
 		GL11.glLightModel(
 				GL11.GL_LIGHT_MODEL_AMBIENT,
@@ -306,14 +314,11 @@ public class Scene extends GraphicsLab {
 		// the appearance of the texture
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glDisable(GL11.GL_LIGHTING);
-		// change the geometry colour to white so that the texture
-		// is bright and details can be seen clearly
-		Colour.WHITE.submit();
+
 		// enable texturing and bind an appropriate texture
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getTextureID());
-		
-		
+
 		// draw back plane
 		// bottom left
 		Vertex v1 = new Vertex(-bgHeight, -bgHeight, -bgZ);
@@ -324,8 +329,8 @@ public class Scene extends GraphicsLab {
 		// bottom right
 		Vertex v4 = new Vertex(bgHeight, -bgHeight, -bgZ);
 		// draw the plane geometry
-		Util.drawRect(v4, v3, v2, v1);
-        
+		Util.drawTexRect(v4, v3, v2, v1);
+
 		// disables textures and reset any local lighting changes
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glPopAttrib();
@@ -343,16 +348,16 @@ public class Scene extends GraphicsLab {
 		// the appearance of the plane
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glDisable(GL11.GL_LIGHTING);
-		
+
 		// change geometry colour to white with the provided alpha value used
 		// for transparency
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, alpha);
-		
+
 		// enable blending and set blend function to interpolate the plane's
 		// transparency to the whole scene
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		
+
 		// draw back plane to (more than) cover the scene
 		// bottom left
 		Vertex v1 = new Vertex(-displayMode.getWidth(),
@@ -368,7 +373,7 @@ public class Scene extends GraphicsLab {
 				-displayMode.getHeight(), -1.0f);
 		// draw the plane geometry
 		Util.drawRect(v4, v3, v2, v1);
-		
+
 		// disable blending and reset any local lighting changes
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glPopAttrib();
@@ -379,8 +384,11 @@ public class Scene extends GraphicsLab {
 	 * shown twice in a row.
 	 */
 	private void newSkybox() {
+		// stores whether a valid index has been found yet
 		boolean found = false;
-		int index = currentSkyboxIndex;
+
+		// stores currently found index
+		int index = 0;
 
 		// keeps on iterating until a new skybox index which isn't the previous
 		// index is found with a random number generator
@@ -400,10 +408,12 @@ public class Scene extends GraphicsLab {
 	 * Update tick values with the time that has passed since last render call.
 	 */
 	private void tick() {
-		// amount to update by, converting delta time from nanoseconds to seconds
+		// Amount to update by.
+		// Converts delta time from nanoseconds to seconds.
+		// Multiplies by animation scale of the scene.
 		float updateTime = (float) ((dT * Math.pow(10, -9)) * getAnimationScale());
 
-		// update tick
+		// update tick values
 		tick += updateTime;
 		xTick += updateTime;
 		yTick += updateTime;
@@ -421,8 +431,8 @@ public class Scene extends GraphicsLab {
 	 * Calculates the ratio of the tick to a given value.
 	 * 
 	 * @param tickLimit
-	 *            the tick limit to
-	 * @return
+	 *            the tick limit which acts as the divisor
+	 * @return the ratio of tick to tickLimit
 	 */
 	private float getRatio(float tickLimit) {
 		return (float) tick / tickLimit;
@@ -439,7 +449,7 @@ public class Scene extends GraphicsLab {
 	/**
 	 * Reset the values of the shaking animation (amplitude and period).
 	 */
-	public void resetShake() {
+	private void resetShake() {
 		ampMax = ampMaxDefault;
 		period = periodDefault;
 	}
@@ -447,7 +457,9 @@ public class Scene extends GraphicsLab {
 	/**
 	 * Start of the x, y and z tick counters in random positions.
 	 */
-	public void initShake() {
+	private void initShake() {
+		// random position in animation of each axis separately creates more
+		// natural looking scene
 		xTick = rnd.nextFloat() * period;
 		yTick = rnd.nextFloat() * period;
 		zTick = rnd.nextFloat() * period;
@@ -458,6 +470,12 @@ public class Scene extends GraphicsLab {
 	 * Calculate the x, y and z translation values of the camera-shaked object.
 	 */
 	private void nextShake() {
+		// The respective axis current place in the period is found and
+		// converted to a ratio.
+		// Multiplying by 2PI finds the respective position of in a full cycle
+		// of a sine curve.
+		// The given value is then multiplied by the current maximum amplitude
+		// to find the shift in the respective axis.
 		shakeX = (float) Math.sin(((xTick) / period) * rad) * ampMax;
 		shakeY = (float) Math.sin(((yTick) / period) * rad) * ampMax;
 		shakeZ = (float) Math.sin(((zTick) / period) * rad) * ampMax;
@@ -471,7 +489,10 @@ public class Scene extends GraphicsLab {
 	 *            the percentage completion of the animation
 	 */
 	private void increaseShake(float ratio) {
+		// increment maximum amplitude with ratio multiplied by difference
+		// between the maximum warp amplitude and the default maximum amplitude.
 		ampMax = ampMaxDefault + ratio * (ampWarpMax - ampMaxDefault);
+		// decrement period with ratio multiplied the default period length.
 		period = periodDefault - ratio * periodDefault;
 	}
 }
