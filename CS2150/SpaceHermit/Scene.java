@@ -34,8 +34,6 @@ import GraphicsLab.*;
  * <li>While viewing the scene along the x, y or z axis, use the up and down
  * cursor keys to increase or decrease the viewpoint's distance from the scene
  * origin
- * <li>Press L to lower the sun
- * <li>Press R to raise the sun
  * <li>Press space when the lever is in it's rest position to start the warp
  * protocol
  * </ul>
@@ -154,10 +152,11 @@ public class Scene extends GraphicsLab {
 	}
 
 	protected void updateScene() {
+		// find time since last frame, and update tick accordingly
 		dT = System.nanoTime() - lastFrameTime;
 		lastFrameTime = System.nanoTime();
 		tick();
-		
+
 		// updates cockpit, value returned tells scene whether warping has
 		// been activated
 		warping = cockpit.updateScene(warpFinished, dT, getAnimationScale());
@@ -172,16 +171,17 @@ public class Scene extends GraphicsLab {
 				if (ratio > 1) {
 					// change mode to default
 					mode = 'd';
-					tickReset();
 					// set global ambient lighting to it's default value
 					resetFade();
 					// reset pov to default value
 					pov = povMax;
+					
+					tickReset();
 				} else {
-					// else gradually decrease global ambience and alpha of
-					// white screen
+					// decrease global ambience, and alpha of white screen
 					currentAmbient = 1.0f - ratio * (1.0f - globalAmbient);
 					alpha = 1.0f - ratio;
+					// increase pov
 					pov = povMin + ratio * (povMax - povMin);
 				}
 			}
@@ -191,18 +191,20 @@ public class Scene extends GraphicsLab {
 			case 'd':
 				// if warp has been activated then change mode to start stall
 				mode = 's';
-				tickReset();
+				// update warping animation variables
 				warpFinished = false;
+				
+				tickReset();
 				break;
 			case 's': // start stall
 				ratio = getRatio(startStallTickLimit);
 				if (ratio > 1) {
 					// change mode to fade in
 					mode = 'i';
+					
 					tickReset();
 				} else {
-					// gradually increase the amplitude and frequency of
-					// shakeing effect
+					// increase the amplitude and frequency of shaking effect
 					increaseShake((float) tick
 							/ (startStallTickLimit + fadeInTickLimit));
 				}
@@ -212,18 +214,19 @@ public class Scene extends GraphicsLab {
 				if (ratio > 1) {
 					// change mode to warping
 					mode = 'w';
-					tickReset();
 					// set ambience to most extreme value
 					currentAmbient = 1.0f;
 					// make white screen fully opaque
 					alpha = 1.0f;
 					// change current skybox texture
 					newSkybox();
+					
+					tickReset();
 				} else {
-					// increase the amplitude and frequency of shakeing effect
+					// increase the amplitude and frequency of shaking effect
 					increaseShake((float) (tick + startStallTickLimit)
 							/ (startStallTickLimit + fadeInTickLimit));
-					// gradually decrease
+					// decrease pov
 					pov = povMax - ratio * (povMax - povMin);
 					// increase global ambience and alpha of white screen
 					currentAmbient = ratio * (1.0f - globalAmbient)
@@ -237,9 +240,11 @@ public class Scene extends GraphicsLab {
 					resetShake();
 					// change mode to fade out
 					mode = 'o';
-					tickReset();
+					// update warping animation variables
 					warping = false;
 					warpFinished = true;
+					
+					tickReset();
 				}
 				break;
 			}
@@ -307,6 +312,8 @@ public class Scene extends GraphicsLab {
 		// enable texturing and bind an appropriate texture
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getTextureID());
+		
+		
 		// draw back plane
 		// bottom left
 		Vertex v1 = new Vertex(-bgHeight, -bgHeight, -bgZ);
@@ -318,6 +325,7 @@ public class Scene extends GraphicsLab {
 		Vertex v4 = new Vertex(bgHeight, -bgHeight, -bgZ);
 		// draw the plane geometry
 		Util.drawRect(v4, v3, v2, v1);
+        
 		// disables textures and reset any local lighting changes
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glPopAttrib();
@@ -335,13 +343,16 @@ public class Scene extends GraphicsLab {
 		// the appearance of the plane
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glDisable(GL11.GL_LIGHTING);
+		
 		// change geometry colour to white with the provided alpha value used
 		// for transparency
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, alpha);
+		
 		// enable blending and set blend function to interpolate the plane's
 		// transparency to the whole scene
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
 		// draw back plane to (more than) cover the scene
 		// bottom left
 		Vertex v1 = new Vertex(-displayMode.getWidth(),
@@ -357,6 +368,7 @@ public class Scene extends GraphicsLab {
 				-displayMode.getHeight(), -1.0f);
 		// draw the plane geometry
 		Util.drawRect(v4, v3, v2, v1);
+		
 		// disable blending and reset any local lighting changes
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glPopAttrib();
@@ -370,8 +382,8 @@ public class Scene extends GraphicsLab {
 		boolean found = false;
 		int index = currentSkyboxIndex;
 
-		// keeps on iterating until a valid skybox index is found with a random
-		// number generator
+		// keeps on iterating until a new skybox index which isn't the previous
+		// index is found with a random number generator
 		while (!found) {
 			index = rnd.nextInt(skyboxes.size());
 			if (index != currentSkyboxIndex) {
@@ -388,10 +400,10 @@ public class Scene extends GraphicsLab {
 	 * Update tick values with the time that has passed since last render call.
 	 */
 	private void tick() {
-		// amount to update by
+		// amount to update by, converting delta time from nanoseconds to seconds
 		float updateTime = (float) ((dT * Math.pow(10, -9)) * getAnimationScale());
 
-		// update values
+		// update tick
 		tick += updateTime;
 		xTick += updateTime;
 		yTick += updateTime;
@@ -443,12 +455,12 @@ public class Scene extends GraphicsLab {
 	}
 
 	/**
-	 * Calculate the x, y and z translation values of the camera shaked object.
+	 * Calculate the x, y and z translation values of the camera-shaked object.
 	 */
 	private void nextShake() {
-		shakeX = (float) Math.sin((xTick / period) * rad) * ampMax;
-		shakeY = (float) Math.sin((yTick / period) * rad) * ampMax;
-		shakeZ = (float) Math.sin((zTick / period) * rad) * ampMax;
+		shakeX = (float) Math.sin(((xTick) / period) * rad) * ampMax;
+		shakeY = (float) Math.sin(((yTick) / period) * rad) * ampMax;
+		shakeZ = (float) Math.sin(((zTick) / period) * rad) * ampMax;
 	}
 
 	/**

@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.Cylinder;
+import org.lwjgl.util.glu.Disk;
 
 import GraphicsLab.FloatBuffer;
 import GraphicsLab.Normal;
@@ -51,6 +53,19 @@ public class Cockpit {
 	private float leverRotationMod = 35.0f;
 	private float leverZ;
 	private float leverRotation;
+	// hologram properties
+	private Hologram hologram;
+	private Cylinder hologramBase = new Cylinder();
+	private Disk hologramBaseDisc = new Disk(); 
+	private float hologramBaseHeight = 0.5f;
+	private float hologramBaseRadius = 1.0f;
+	private float hologramBaseRadiusTop = leverBaseInwardMod * hologramBaseRadius;
+	private float hologramBaseX = -5*frontHeight/8;
+	private float hologramBaseY = displaceY + frontWidth - hologramBaseHeight;
+	private float hologramBaseZ = controlMod * frontDist - 6.0f;
+	private float hologramElevation = 1.5f;
+	
+	
 	
 	/* declare lever animation variables */
 	// current mode in animation, 'd' is the default mode
@@ -67,8 +82,6 @@ public class Cockpit {
 	private float ambDefault = 0.25f;
 	private float difDefault = 0.125f;
 	private float[] position = {0.0f, displaceY + middleFrontY, -frontDist, 1.0f};
-	
-	private Hologram hologram;
 	
 	/**
 	 * Construct cockpit with default values for lever properties, and modify
@@ -146,33 +159,34 @@ public class Cockpit {
 				ifCharged = true;
 			}
 		}
+		
 		// update hologram animation values
-		hologram.updateScene();
+		boolean startFlicker = warpFinished && mode == 'r' && tick > 0.0125f;
+		hologram.updateScene(startFlicker, dT, animationScale);
 		
 		// tell initiating class that warp protocol has not been activated
 		return ifCharged;
 	}
 
 	public void renderScene() {
-		/* reset positioning */
-		GL11.glTranslatef(0.0f, 0.0f, 0.0f);
-		GL11.glScalef(1.0f, 1.0f, 1.0f);
-		GL11.glRotatef(0.0f, 0.0f, 0.0f, 0.0f);
-
 		/* draw static objects */
 		drawFrame();
 		drawFloor();
 		drawControlBoard();
 		drawLeverBase();
-		// translate, rotate and draw lever
+		drawHologramBase();
+		
+		/* draw animated objects */
+		// transform and draw lever
 		GL11.glPushMatrix();
 		GL11.glTranslatef(0, leverY, leverZ);
 		GL11.glRotatef(leverRotation, 1.0f, 0.0f, 0.0f);
 		drawLever();
 		GL11.glPopMatrix();
-		// draw hologram
+		// transform and draw hologram
 		GL11.glPushMatrix();
-		GL11.glTranslatef(-frontHeight/2, displaceY + 4.0f, controlMod*frontDist + 4.0f);
+		GL11.glScalef(1.0f, 1.0f, 1.0f);
+		GL11.glTranslatef(hologramBaseX, hologramBaseY + hologramElevation, hologramBaseZ);
 		hologram.renderScene();
 		GL11.glPopMatrix();
 		
@@ -236,7 +250,7 @@ public class Cockpit {
 	/**
 	 * Draw the cockpit's floor.
 	 */
-	public void drawFloor() {
+	private void drawFloor() {
 		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
@@ -256,7 +270,7 @@ public class Cockpit {
 	/**
 	 * Draw the control board.
 	 */
-	public void drawControlBoard() {
+	private void drawControlBoard() {
 		/* set material properties */
 		float shininess = 1.0f;
 		float[] specular = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -274,7 +288,7 @@ public class Cockpit {
 	/**
 	 * Draw the base of the lever.
 	 */
-	public void drawLeverBase() {
+	private void drawLeverBase() {
 		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.125f, 0.125f, 0.125f, 1.0f };
@@ -298,11 +312,11 @@ public class Cockpit {
 	/**
 	 * Draw the lever.
 	 */
-	public void drawLever() {
+	private void drawLever() {
 		/* set material properties */
 		float shininess = 0.0f;
 		float[] specular = { 0.5f, 0.25f, 0.25f, 1.0f };
-		float[] colour = { 0.75f, 0.25f, 0.25f, 1.0f };
+		float[] colour = { 0.875f, 0.125f, 0.125f, 1.0f };
 
 		Util.material(shininess, specular, colour);
 
@@ -389,6 +403,28 @@ public class Cockpit {
 		// draw top side
 		Util.drawRect(vb7d, vb6d, vb6, vb7);
 	}
+	
+	private void drawHologramBase() {
+		/* set material properties */
+		float shininess = 0.0f;
+		float[] specular = { 0.5f, 0.0f, 0.0f, 1.0f };
+		float[] colour = { 0.4375f, 0.5f, 0.5625f, 1.0f };
+
+		Util.material(shininess, specular, colour);
+		
+		
+		GL11.glPushMatrix();
+		GL11.glTranslatef(hologramBaseX, hologramBaseY, hologramBaseZ);
+		GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		hologramBase.draw(hologramBaseRadiusTop, hologramBaseRadius, hologramBaseHeight, 24, 24);
+		GL11.glPopMatrix();
+		
+		GL11.glPushMatrix();
+		GL11.glTranslatef(hologramBaseX, hologramBaseY, hologramBaseZ);
+		GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+		hologramBaseDisc.draw(hologramBaseRadiusTop, 0.0f, 24, 24);
+		GL11.glPopMatrix();
+	}
 
 	/**
 	 * Change z position and rotation of lever depending on the tick to current
@@ -399,7 +435,7 @@ public class Cockpit {
 	 * @param mode
 	 *            whether increasing (mode = 0) or decreasing (mode = 1) values
 	 */
-	public void animLever(float tickLimit, int mode) {
+	private void animLever(float tickLimit, int mode) {
 		// use a cosine function to simulate natural movement of how a lever
 		// would be move
 		double halfRadians = (double) (tick / tickLimit + mode) * Math.PI;
@@ -412,14 +448,14 @@ public class Cockpit {
 	/**
 	 * Renders the cockpit light, varying the lighting depending on animation mode.
 	 */
-	public void renderLight() {
+	private void renderLight() {
 		// initialise red component of lighting
 		float ambRed = ambDefault;
 		float difRed = difDefault;
 		
 		// when in lever charge animation, modify red components ever tick to create flashing effect 
 		if(mode == 'c') {
-			float scale = (float)  Math.abs((Math.sin((tick / (chargeTickLimit / (amountOfFlashes / 2))) * Scene.rad)));
+			float scale = (float)  Math.abs((Math.sin((tick / (chargeTickLimit / (amountOfFlashes))) * Scene.rad + (3*Scene.rad/4)) + 1));
 			ambRed = ambRed + scale * (0.5f - ambDefault);
 			difRed = difRed + scale * (0.5f - difDefault);
 		}
@@ -443,7 +479,7 @@ public class Cockpit {
 	 * @param dT
 	 * @param animationScale
 	 */
-	public void tick(long dT, float animationScale) {
+	private void tick(long dT, float animationScale) {
 		// update tick with relative change in time
 		tick += (float) ((dT * Math.pow(10, -9)) * animationScale);
 	}
@@ -451,7 +487,7 @@ public class Cockpit {
 	/**
 	 * Reset the tick count to 0.
 	 */
-	public void tickReset() {
+	private void tickReset() {
 		tick = 0.0f;
 	}
 	
