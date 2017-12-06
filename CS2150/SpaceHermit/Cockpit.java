@@ -54,15 +54,16 @@ public class Cockpit {
 	// hologram properties
 	private Hologram hologram;
 	private Cylinder hologramBase = new Cylinder();
-	private Disk hologramBaseDisc = new Disk(); 
+	private Disk hologramBaseDisc = new Disk();
 	private float hologramBaseHeight = 0.5f;
 	private float hologramBaseRadius = 1.0f;
-	private float hologramBaseRadiusTop = leverBaseInwardMod * hologramBaseRadius;
-	private float hologramBaseX = -5*frontHeight/8;
+	private float hologramBaseRadiusTop = leverBaseInwardMod
+			* hologramBaseRadius;
+	private float hologramBaseX = -5 * frontHeight / 8;
 	private float hologramBaseY = displaceY + frontWidth - hologramBaseHeight;
 	private float hologramBaseZ = controlMod * frontDist - 6.0f;
 	private float hologramElevation = 1.5f;
-	
+
 	/* declare lever animation variables */
 	// current mode in animation, 'd' is the default mode
 	private char mode = 'd';
@@ -77,10 +78,11 @@ public class Cockpit {
 	// light values
 	private float ambDefault = 0.25f;
 	private float difDefault = 0.125f;
-	private float[] position = {0.0f, displaceY + middleFrontY, -frontDist, 1.0f};
-	
+	private float[] position = { 0.0f, displaceY + middleFrontY, -frontDist,
+			1.0f };
+
 	// vertexes are defined at bottom of file
-	
+
 	/**
 	 * Construct cockpit with default values for lever properties, and modify
 	 * tick limits to adjust with the animation scale.
@@ -92,11 +94,11 @@ public class Cockpit {
 		/* set default values for lever position */
 		leverZ = leverZMid + leverZMod;
 		leverRotation = leverRotationMod;
-		
+
 		/* render and enable cockpit light */
 		renderLight();
 		GL11.glEnable(GL11.GL_LIGHT0);
-		
+
 		/* initialise hologram object */
 		hologram = new Hologram();
 	}
@@ -121,11 +123,20 @@ public class Cockpit {
 	}
 
 	/**
+	 * @param warpFinished
+	 *            whether warp has finished
+	 * @param dT
+	 *            time since last render update
+	 * @param animationScale
+	 *            the animation scale of the program
 	 * @return boolean value that tells the instantiating class that the warp
 	 *         protocol has been activated.
 	 */
-	public boolean updateScene(boolean warpFinished, long dT, float animationScale) {
+	public boolean updateScene(boolean warpFinished, long dT,
+			float animationScale) {
+		// stores whether cockpit is charged and ready for warping
 		boolean ifCharged = false;
+
 		// check what modes are active, if any
 		switch (mode) {
 		case 'c': // lever charging
@@ -142,7 +153,7 @@ public class Cockpit {
 			}
 			break;
 		case 'r': // lever reset
-			if(warpFinished) {
+			if (warpFinished) {
 				if (tick > restTickLimit) {
 					// change mode to default
 					mode = 'd';
@@ -157,11 +168,11 @@ public class Cockpit {
 				ifCharged = true;
 			}
 		}
-		
+
 		// update hologram animation values
 		boolean startFlicker = warpFinished && mode == 'r' && tick != 0.0f;
 		hologram.updateScene(startFlicker, dT, animationScale);
-		
+
 		// tell initiating class that warp protocol has not been activated
 		return ifCharged;
 	}
@@ -173,7 +184,7 @@ public class Cockpit {
 		drawControlBoard();
 		drawLeverBase();
 		drawHologramBase();
-		
+
 		/* draw animated objects */
 		// transform and draw lever
 		GL11.glPushMatrix();
@@ -184,10 +195,11 @@ public class Cockpit {
 		// transform and draw hologram
 		GL11.glPushMatrix();
 		GL11.glScalef(1.0f, 1.0f, 1.0f);
-		GL11.glTranslatef(hologramBaseX, hologramBaseY + hologramElevation, hologramBaseZ);
+		GL11.glTranslatef(hologramBaseX, hologramBaseY + hologramElevation,
+				hologramBaseZ);
 		hologram.renderScene();
 		GL11.glPopMatrix();
-		
+
 		/* render light */
 		renderLight();
 	}
@@ -401,7 +413,7 @@ public class Cockpit {
 		// draw top side
 		Util.drawRect(vb7d, vb6d, vb6, vb7);
 	}
-	
+
 	private void drawHologramBase() {
 		/* set material properties */
 		float shininess = 0.0f;
@@ -409,14 +421,17 @@ public class Cockpit {
 		float[] colour = { 0.4375f, 0.5f, 0.5625f, 1.0f };
 
 		Util.material(shininess, specular, colour);
-		
-		
+
+		/* draw base */
+		// draw cylinder
 		GL11.glPushMatrix();
 		GL11.glTranslatef(hologramBaseX, hologramBaseY, hologramBaseZ);
 		GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-		hologramBase.draw(hologramBaseRadiusTop, hologramBaseRadius, hologramBaseHeight, 24, 24);
+		hologramBase.draw(hologramBaseRadiusTop, hologramBaseRadius,
+				hologramBaseHeight, 24, 24);
 		GL11.glPopMatrix();
-		
+
+		// draw disc
 		GL11.glPushMatrix();
 		GL11.glTranslatef(hologramBaseX, hologramBaseY, hologramBaseZ);
 		GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
@@ -434,43 +449,49 @@ public class Cockpit {
 	 *            whether increasing (mode = 0) or decreasing (mode = 1) values
 	 */
 	private void animLever(float tickLimit, int mode) {
-		// use a cosine function to simulate natural movement of how a lever
-		// would be move
+		// the animation's current point in the cosine period is found and
+		// converted to a ratio
+		// multiplying by 2PI finds the respective position of in a full cycle
+		// of a cosine curve
 		double halfRadians = (double) (tick / tickLimit + mode) * Math.PI;
+		// the given value is then multiplied by the current maximum amplitude
+		// to find the shift in the respective axis
 		float mod = (float) Math.cos(halfRadians);
 		// adjust z position and rotation depending on found modification value
-		leverZ = leverZMid + mod * leverZMod; // 10 -> 0 -> -10
-		leverRotation = mod * leverRotationMod; // 30 -> 0 -> -30
+		leverZ = leverZMid + mod * leverZMod;
+		leverRotation = mod * leverRotationMod;
 	}
 
 	/**
-	 * Renders the cockpit light, varying the lighting depending on animation mode.
+	 * Renders the cockpit light, varying the lighting depending on animation
+	 * mode.
 	 */
 	private void renderLight() {
 		// initialise red component of lighting
 		float ambRed = ambDefault;
 		float difRed = difDefault;
-		
-		// when in lever charge animation, modify red components ever tick to create flashing effect 
-		if(mode == 'c') {
-			float scale = (float)  Math.abs((Math.sin((tick / (chargeTickLimit / (amountOfFlashes))) * Scene.rad + (3*Scene.rad/4)) + 1));
+
+		// when in lever charge animation, modify red components ever tick to
+		// create flashing effect
+		if (mode == 'c') {
+			float scale = (float) Math.abs((Math
+					.sin((tick / (chargeTickLimit / (amountOfFlashes)))
+							* Util.rad + (3 * Util.rad / 4)) + 1));
 			ambRed = ambRed + scale * (0.5f - ambDefault);
 			difRed = difRed + scale * (0.5f - difDefault);
 		}
-		
-		float[] ambient = {ambRed, ambDefault, 2*ambDefault, 1.0f};
-		float[] diffuse = {difRed, difDefault, 2*difDefault, 1.0f};
-		
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT,
-				FloatBuffer.wrap(ambient));
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE,
-				FloatBuffer.wrap(diffuse));
+
+		float[] ambient = { ambRed, ambDefault, 2 * ambDefault, 1.0f };
+		float[] diffuse = { difRed, difDefault, 2 * difDefault, 1.0f };
+
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient));
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, FloatBuffer.wrap(diffuse));
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR,
 				FloatBuffer.wrap(diffuse));
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION,
 				FloatBuffer.wrap(position));
 	}
-	
+
 	/**
 	 * Update tick values with the time that has passed since last render call.
 	 * 
@@ -488,7 +509,7 @@ public class Cockpit {
 	private void tickReset() {
 		tick = 0.0f;
 	}
-	
+
 	/* declare vertexes of cockpit */
 	// nb: letter 'd' stands for an "in-depth" version of the vertex with the
 	// same number, used to make everything look 3D
@@ -511,7 +532,7 @@ public class Cockpit {
 			+ displaceY, frontDist - frontWidth2);
 	private Vertex v3d = new Vertex(frontHeight + frontWidth, frontWidth
 			+ displaceY, frontDist - frontWidth2);
-	
+
 	/* side bars vertexes */
 	// calculate total x displacement of side bars
 	private float bottomTotalX = bottomXMod * frontHeight;

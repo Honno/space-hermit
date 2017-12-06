@@ -24,15 +24,12 @@ import GraphicsLab.Vertex;
 /**
  * My projects simulates being inside of a space jet.
  * 
- * Features:
- * - The scene "bobs" the cockpit in the x, y and z axis in a natural
+ * Features: - The scene "bobs" the cockpit in the x, y and z axis in a natural
  * way with the use of sinusoidal movement to create a feeling of floating in
- * space.
- * - A very nice looking cockpit front. - Translucent, almost-holographic
+ * space. - A very nice looking cockpit front. - Translucent, almost-holographic
  * depictions of the Earth and Moon occupying the cockpit. - The moon orbits the
  * Earth, with sinusoidal bumps in the y axis to simulate natural fluctuations
- * of an orbit.
- * - A lever that animates forward and backwards, using sinusoidal
+ * of an orbit. - A lever that animates forward and backwards, using sinusoidal
  * movement to simulate a "resistance" effect when pushing. - You can push the
  * lever and start the warp protocol. The shaking and ambience exemplifies, with
  * the scene fading to a pure white as you travel accross the universe.
@@ -46,8 +43,8 @@ import GraphicsLab.Vertex;
  * <li>While viewing the scene along the x, y or z axis, use the up and down
  * cursor keys to increase or decrease the viewpoint's distance from the scene
  * origin
- * <li>Press the space bar when the lever is in it's rest position to start the warp
- * protocol
+ * <li>Press the space bar when the lever is in it's rest position to start the
+ * warp protocol
  * </ul>
  */
 public class Scene extends GraphicsLab {
@@ -108,14 +105,12 @@ public class Scene extends GraphicsLab {
 	private float yTick = 0;
 	private float zTick = 0;
 	// store double value of 2PI
-	public static double rad = 2 * Math.PI;
 
 	/* declare background variables */
 	// positioning values of background plane
 	float bgHeight = 64.0f;
 	float bgZ = 96.0f;
 	// path values to access skyboxes
-	public static String pckgDir = "SpaceHermit";
 	private String skyboxDir = "textures";
 	private String[] skyboxNames = { "corona_ft.png", "redeclipse_ft.png",
 			"unnamedspace_ft.jpg", "unnamedspace3_ft.png" };
@@ -143,7 +138,8 @@ public class Scene extends GraphicsLab {
 		initShake();
 
 		// loads skyboxes, and set a random one as current
-		skyboxes = Util.loadTextures(pckgDir + "/" + skyboxDir, skyboxNames);
+		skyboxes = Util.loadTextures(Util.pckgDir + "/" + skyboxDir,
+				skyboxNames);
 		newSkybox();
 
 		// sets the global ambient lighting to it's default value
@@ -488,9 +484,16 @@ public class Scene extends GraphicsLab {
 		// of a sine curve.
 		// The given value is then multiplied by the current maximum amplitude
 		// to find the shift in the respective axis.
-		shakeX = (float) Math.sin(((xTick) / period) * rad) * ampMax;
-		shakeY = (float) Math.sin(((yTick) / period) * rad) * ampMax;
-		shakeZ = (float) Math.sin(((zTick) / period) * rad) * ampMax;
+		shakeX = (float) Math.sin(((xTick) / period) * Util.rad) * ampMax;
+		shakeY = (float) Math.sin(((yTick) / period) * Util.rad) * ampMax;
+		shakeZ = (float) Math.sin(((zTick) / period) * Util.rad) * ampMax;
+
+		if (shakeX > period)
+			shakeX = 0.0f;
+		if (shakeY > period)
+			shakeY = 0.0f;
+		if (shakeZ > period)
+			shakeZ = 0.0f;
 	}
 
 	/**

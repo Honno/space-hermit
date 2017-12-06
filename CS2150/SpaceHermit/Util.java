@@ -16,6 +16,9 @@ import GraphicsLab.Normal;
 import GraphicsLab.Vertex;
 
 public class Util {
+	public static String pckgDir = "SpaceHermit";
+	public static double rad = 2 * Math.PI;
+
 	public static void drawRect(Vertex v1, Vertex v2, Vertex v3, Vertex v4) {
 		GL11.glBegin(GL11.GL_POLYGON);
 		new Normal(v1.toVector(), v2.toVector(), v3.toVector(), v4.toVector())
@@ -26,7 +29,7 @@ public class Util {
 		v4.submit();
 		GL11.glEnd();
 	}
-	
+
 	public static void drawTexRect(Vertex v1, Vertex v2, Vertex v3, Vertex v4) {
 		GL11.glBegin(GL11.GL_POLYGON);
 		new Normal(v1.toVector(), v2.toVector(), v3.toVector(), v4.toVector())
@@ -85,7 +88,7 @@ public class Util {
 				// image's type using captured regex pattern from name
 				textures.add(loadTexture(dir + "/" + name, match.group(1)
 						.toUpperCase()));
-			} catch (Exception e) {
+			} catch (IOException e) {
 				// captures any errors (i.e. no pattern found, path does not
 				// exist, etc.)
 				e.printStackTrace();
@@ -94,8 +97,8 @@ public class Util {
 		return textures;
 	}
 
-	public static Texture loadTexture(String path, String imageType) throws IOException
-			 {
+	public static Texture loadTexture(String path, String imageType)
+			throws IOException {
 		Texture tex = TextureLoader.getTexture(imageType,
 				ResourceLoader.getResourceAsStream(path), true);
 		return tex;
