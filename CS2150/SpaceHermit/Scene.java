@@ -444,6 +444,11 @@ public class Scene extends GraphicsLab {
 	 * Update tick values with the time that has passed since last render call.
 	 */
 	private void tick() {
+		// reset tick after half a minute to ensure it's not too large for calculations
+		if(tick > 30.0f) {
+			tick = 0.0f;
+		}
+		
 		// Amount to update by.
 		// Converts delta time from nanoseconds to seconds.
 		// Multiplies by animation scale of the scene.

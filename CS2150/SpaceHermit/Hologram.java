@@ -241,7 +241,8 @@ public class Hologram {
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
 		GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-		cone.draw(1.0f, 0.5f, 0.875f, 24, 24);
+		//cone.draw(1.0f, 0.5f, 0.875f, 24, 24);
+		cone.draw(-1.0f, -0.5f, 0.875f, 24, 24);
 
 		// reset colour changes
 		Colour.WHITE.submit();
