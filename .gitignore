@@ -3,3 +3,5 @@ _project.xml
 .classpath
 .project
 LWJGL/
+src/coursework/barberm1/textures/earth.xcf
+src/coursework/barberm1/textures/moon.xcf
