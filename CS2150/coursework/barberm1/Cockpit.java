@@ -1,4 +1,4 @@
-package SpaceHermit;
+package coursework.barberm1;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;

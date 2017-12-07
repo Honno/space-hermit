@@ -1,4 +1,4 @@
-package SpaceHermit;
+package coursework.barberm1;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import GraphicsLab.Vertex;
  * Contains useful functions used across the package.
  */
 public class Util {
-	public static String pckgDir = "SpaceHermit";
+	public static String pckgDir = "coursework/barberm1";
 	public static double rad = 2 * Math.PI;
 
 	/**

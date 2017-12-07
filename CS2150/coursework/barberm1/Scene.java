@@ -29,7 +29,7 @@
  *  |
  *  +-- [] Fade screen
  */
-package SpaceHermit;
+package coursework.barberm1;
 
 import java.util.List;
 import java.util.Random;
