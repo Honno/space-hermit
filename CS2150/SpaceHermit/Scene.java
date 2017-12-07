@@ -67,13 +67,13 @@ public class Scene extends GraphicsLab {
 	// tick counter for the current animation mode
 	private float tick = 0;
 	// 's' mode, before the actual warp begins to provide tension
-	private float startStallTickLimit = 4.0f;
+	private float startStallTickLimit = 2.0f;
 	// 'i' mode, fades scene into warp
 	private float fadeInTickLimit = 2.0f;
 	// 'w' mode, warp active and scene is fully bright
-	private float warpingTickLimit = 1.0f;
+	private float warpingTickLimit = 2.0f;
 	// 'o' mode, fades scene out of warp
-	private float fadeOutTickLimit = 2.0f;
+	private float fadeOutTickLimit = 3.0f;
 	// default and current values of ambient lighting
 	private float globalAmbient = 0.125f;
 	private float currentAmbient;
@@ -91,7 +91,7 @@ public class Scene extends GraphicsLab {
 	/* declare cockpit shaking variables */
 	// amplitude parameters
 	private float ampMaxDefault = 0.5f;
-	private float ampWarpMax = 2.0f;
+	private float ampWarpMax = 1.0f;
 	private float ampMax;
 	// period parameters
 	private float periodDefault = 10.0f;
@@ -216,7 +216,7 @@ public class Scene extends GraphicsLab {
 					tickReset();
 				} else {
 					// increase the amplitude and frequency of shaking effect
-					increaseShake((float) tick
+					increaseShake(tick
 							/ (startStallTickLimit + fadeInTickLimit));
 				}
 				break;
@@ -235,7 +235,7 @@ public class Scene extends GraphicsLab {
 					tickReset();
 				} else {
 					// increase the amplitude and frequency of shaking effect
-					increaseShake((float) (tick + startStallTickLimit)
+					increaseShake((tick + startStallTickLimit)
 							/ (startStallTickLimit + fadeInTickLimit));
 					// decrease pov
 					pov = povMax - ratio * (povMax - povMin);

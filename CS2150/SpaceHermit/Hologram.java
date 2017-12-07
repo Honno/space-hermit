@@ -25,7 +25,7 @@ public class Hologram {
 	private int moonOrbitDips = 4;
 	private float moonOrbitPeriod = 10.0f;
 	private float moonOrbitDist = 2.0f;
-	private float moonOrbitAmp = 0.25f;
+	private float moonOrbitAmp = 0.125f;
 	private float moonOrbitY;
 	private Texture moonTex;
 	private Sphere moon;
@@ -36,13 +36,13 @@ public class Hologram {
 	/* declare flicker animation variables */
 	private boolean flicker = false;
 	private int constantFlickers = 16;
-	private int exponentialFlickers = 4;
+	private int exponentialFlickers = 6;
 	private float shortTime = 0.03125f;
 	private float nextTime = shortTime;
 	private int counter = 1;
 	private float m = 6.0f;
 	private float flickerTick = 0.0f;
-	private boolean flickerAnim = true;
+	private boolean flickerAnim = false;
 
 	/* declare tick */
 	private float tick = 0.0f;
@@ -236,7 +236,7 @@ public class Hologram {
 		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
 		GL11.glDisable(GL11.GL_LIGHTING);
 		// change geometry colour to translucent blue
-		GL11.glColor4f(0.25f, 0.25f, 1.0f, 0.5f);
+		GL11.glColor4f(0.0f, 0.75f, 1.0f, 0.125f);
 
 		// enable blending and set blend function to interpolate the plane's
 		// transparency to the whole scene

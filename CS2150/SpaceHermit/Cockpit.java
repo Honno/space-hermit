@@ -22,15 +22,15 @@ public class Cockpit {
 	private float bottomY = 0.0f;
 	private float bottomXMod = 1.5f;
 	// middle bars properties
-	private float middleY = 16f;
+	private float middleY = 16.0f;
 	private float middleXMod = 1.25f;
 	private float middleZMod = 0.75f;
 	// top bars describing
-	private float topY = 0f;
+	private float topY = 0.0f;
 	private float topXMod = 1.5f;
 	// floor properties
 	private float floorY = -24f;
-	private float floorHeight = 6f;
+	private float floorHeight = 6.0f;
 	private float floorZMod = 0.5f;
 	// bar that bridges top bar properties
 	private float middleFrontY = 20f;
@@ -39,8 +39,8 @@ public class Cockpit {
 	// control board properties
 	private float controlMod = 0.75f;
 	// lever base properties
-	private float leverBaseHeight = 4f;
-	private float leverBaseWidth = 2f;
+	private float leverBaseHeight = 4.0f;
+	private float leverBaseWidth = 2.0f;
 	private float leverBaseDepth = 0.5f;
 	private float leverBaseInwardMod = 0.75f;
 	private float leverBaseMod = 0.85f;
@@ -76,9 +76,9 @@ public class Cockpit {
 	// how many times the red light flashes when the lever is charging
 	private int amountOfFlashes = 4;
 	// light values
-	private float ambDefault = 0.25f;
+	private float ambDefault = 0.125f;
 	private float difDefault = 0.125f;
-	private float[] position = { 0.0f, displaceY + middleFrontY, -frontDist,
+	private float[] position = { -frontHeight, displaceY + middleFrontY, 0.5f*frontDist,
 			1.0f };
 
 	// vertexes are defined at bottom of file
@@ -476,7 +476,7 @@ public class Cockpit {
 		if (mode == 'c') {
 			float scale = (float) Math.abs((Math
 					.sin((tick / (chargeTickLimit / (amountOfFlashes)))
-							* Util.rad + (3 * Util.rad / 4)) + 1));
+							* Util.rad + (3 * Util.rad / 4)) + 1)) * 0.5f;
 			ambRed = ambRed + scale * (0.5f - ambDefault);
 			difRed = difRed + scale * (0.5f - difDefault);
 		}
@@ -619,25 +619,23 @@ public class Cockpit {
 	// calculate total x displacement of top bars
 	private float topTotalX = topXMod * frontHeight;
 	// calculate total y displacement of top bars
-	private float topTotalY = middleTopTotalY + topY;
+	private float topTotalY = middleTopTotalY + topY + frontWidth2;
 
 	// bottom left
 	private Vertex v19 = new Vertex(-topTotalX, topTotalY, 0);
 	// top left
-	private Vertex v20 = new Vertex(-topTotalX + frontWidth2, topTotalY
-			+ frontWidth2, 0);
+	private Vertex v20 = new Vertex(-topTotalX + frontWidth2, topTotalY, 0);
 
 	private Vertex v20d = new Vertex(-topTotalX + frontWidth2, topTotalY
-			+ frontWidth2 * 2, 0);
+			+ frontWidth2, 0);
 
 	// bottom right
 	private Vertex v21 = new Vertex(topTotalX, topTotalY, 0);
 	// top right
-	private Vertex v22 = new Vertex(topTotalX - frontWidth2, topTotalY
-			+ frontWidth2, 0);
+	private Vertex v22 = new Vertex(topTotalX - frontWidth2, topTotalY, 0);
 
 	private Vertex v22d = new Vertex(topTotalX - frontWidth2, topTotalY
-			+ frontWidth2 * 2, 0);
+			+ frontWidth2, 0);
 
 	/* floor vertexes */
 	// calculate total y displacement of floor
