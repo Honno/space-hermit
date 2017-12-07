@@ -16,5 +16,5 @@
 	<classpathentry kind="lib" path="LWJGL/jar/lzma.jar"/>
 	<classpathentry kind="lib" path="LWJGL/jar/slick-util.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="CS2150"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
