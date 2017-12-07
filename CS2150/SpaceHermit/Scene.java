@@ -53,14 +53,16 @@ import GraphicsLab.Vertex;
  * - A very nice looking cockpit front.
  * - Translucent, almost-holographic depictions of the Earth and Moon occupying
  * the cockpit. 
- * - The moon orbits the
- * Earth, with sinusoidal bumps in the y axis to simulate natural fluctuations
- * of an orbit.
+ * - The moon orbits the Earth, with sinusoidal bumps in the y axis to simulate
+ * natural fluctuations of an orbit.
  * - A lever that animates forward and backwards, using sinusoidal
  * movement to simulate a "resistance" effect when pushing.
- * - You can push the lever and start the warp protocol. The shaking and
- * ambience exemplifies, with the scene fading to a pure white as you travel
- * across the universe.
+ * - You can push the lever and start the warp protocol.
+ * - Lighting flashes red when lever is being pushed.
+ * - When lever is fully pushed, the shaking, pov and ambience exemplifies, with the 
+ * scene fading to a pure white as you travel across the universe.
+ * - When the warp has finished, the scene fades in again and the hologram flickers
+ * for a while before it stabilises.
  * 
  * <p>
  * Controls:
@@ -333,9 +335,6 @@ public class Scene extends GraphicsLab {
 		// negative Z axis
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();
-	}
-
-	protected void cleanupScene() {// TODO: Clean up your resources here
 	}
 
 	/**
