@@ -23,7 +23,7 @@ public class Hologram {
 	/* declare Moon and animation variables */
 	private float moonRotatePeriod = 10.0f;
 	private int moonOrbitDips = 4;
-	private float moonOrbitPeriod = 10.0f;
+	private float moonOrbitPeriod = 5.0f;
 	private float moonOrbitDist = 2.0f;
 	private float moonOrbitAmp = 0.125f;
 	private float moonOrbitY;
@@ -136,10 +136,7 @@ public class Hologram {
 		}
 
 		// find y position of moon
-		moonOrbitY = (float) Math
-				.sin((double) ((tick / moonOrbitDips) / moonOrbitPeriod)
-						* Util.rad)
-				* moonOrbitAmp;
+		moonOrbitY = (float) Math.sin((double) ((tick / moonOrbitDips) / moonOrbitPeriod) * Util.rad) * moonOrbitAmp;
 	}
 
 	public void renderScene() {
@@ -151,16 +148,16 @@ public class Hologram {
 			drawCone();
 			GL11.glPopMatrix();
 
+			// draw moon
+			GL11.glPushMatrix();
+			GL11.glRotatef(360.0f * (tick / moonOrbitPeriod), 0.0f, 1.0f, 0.0f);
+			GL11.glTranslatef(moonOrbitDist, moonOrbitY, 0.0f);
+			drawMoon();
+			GL11.glPopMatrix();
+
 			// draw earth
 			GL11.glPushMatrix();
 			drawEarth();
-			GL11.glPopMatrix();
-
-			// draw moon
-			GL11.glPushMatrix();
-			GL11.glRotatef(360.0f * (tick / moonRotatePeriod), 0.0f, 1.0f, 0.0f);
-			GL11.glTranslatef(moonOrbitDist, moonOrbitY, 0.0f);
-			drawMoon();
 			GL11.glPopMatrix();
 		}
 	}

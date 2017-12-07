@@ -57,8 +57,7 @@ public class Cockpit {
 	private Disk hologramBaseDisc = new Disk();
 	private float hologramBaseHeight = 0.5f;
 	private float hologramBaseRadius = 1.0f;
-	private float hologramBaseRadiusTop = leverBaseInwardMod
-			* hologramBaseRadius;
+	private float hologramBaseRadiusTop = leverBaseInwardMod * hologramBaseRadius;
 	private float hologramBaseX = -5 * frontHeight / 8;
 	private float hologramBaseY = displaceY + frontWidth - hologramBaseHeight;
 	private float hologramBaseZ = controlMod * frontDist - 6.0f;
@@ -78,8 +77,7 @@ public class Cockpit {
 	// light values
 	private float ambDefault = 0.125f;
 	private float difDefault = 0.125f;
-	private float[] position = { -frontHeight, displaceY + middleFrontY, 0.5f*frontDist,
-			1.0f };
+	private float[] position = { -frontHeight, displaceY + middleFrontY, 0.5f * frontDist, 1.0f };
 
 	// vertexes are defined at bottom of file
 
@@ -132,8 +130,7 @@ public class Cockpit {
 	 * @return boolean value that tells the instantiating class that the warp
 	 *         protocol has been activated.
 	 */
-	public boolean updateScene(boolean warpFinished, long dT,
-			float animationScale) {
+	public boolean updateScene(boolean warpFinished, long dT, float animationScale) {
 		// stores whether cockpit is charged and ready for warping
 		boolean ifCharged = false;
 
@@ -182,21 +179,19 @@ public class Cockpit {
 		drawFrame();
 		drawFloor();
 		drawControlBoard();
-		drawLeverBase();
-		drawHologramBase();
 
 		/* draw animated objects */
 		// transform and draw lever
 		GL11.glPushMatrix();
+		drawLeverBase();
 		GL11.glTranslatef(0, leverY, leverZ);
 		GL11.glRotatef(leverRotation, 1.0f, 0.0f, 0.0f);
 		drawLever();
 		GL11.glPopMatrix();
 		// transform and draw hologram
 		GL11.glPushMatrix();
-		GL11.glScalef(1.0f, 1.0f, 1.0f);
-		GL11.glTranslatef(hologramBaseX, hologramBaseY + hologramElevation,
-				hologramBaseZ);
+		drawHologramBase();
+		GL11.glTranslatef(hologramBaseX, hologramBaseY + hologramElevation, hologramBaseZ);
 		hologram.renderScene();
 		GL11.glPopMatrix();
 
@@ -356,26 +351,18 @@ public class Cockpit {
 
 		// top vertexes
 		// bottom left
-		Vertex vb5 = new Vertex(-leverHeight - leverExtendX, leverDepth,
-				leverHeight);
+		Vertex vb5 = new Vertex(-leverHeight - leverExtendX, leverDepth, leverHeight);
 		// top left
-		Vertex vb6 = new Vertex(-leverHeight - leverExtendX, leverDepth
-				+ leverHeight * 2, leverHeight);
+		Vertex vb6 = new Vertex(-leverHeight - leverExtendX, leverDepth + leverHeight * 2, leverHeight);
 		// top right
-		Vertex vb7 = new Vertex(leverHeight + leverExtendX, leverDepth
-				+ leverHeight * 2, leverHeight);
+		Vertex vb7 = new Vertex(leverHeight + leverExtendX, leverDepth + leverHeight * 2, leverHeight);
 		// bottom right
-		Vertex vb8 = new Vertex(leverHeight + leverExtendX, leverDepth,
-				leverHeight);
+		Vertex vb8 = new Vertex(leverHeight + leverExtendX, leverDepth, leverHeight);
 
-		Vertex vb5d = new Vertex(-leverHeight - leverExtendX, leverDepth,
-				leverHeight - leverHeight * 2);
-		Vertex vb6d = new Vertex(-leverHeight - leverExtendX, leverDepth
-				+ leverHeight, leverHeight - leverHeight * 2);
-		Vertex vb7d = new Vertex(leverHeight + leverExtendX, leverDepth
-				+ leverHeight, leverHeight - leverHeight * 2);
-		Vertex vb8d = new Vertex(leverHeight + leverExtendX, leverDepth,
-				leverHeight - leverHeight * 2);
+		Vertex vb5d = new Vertex(-leverHeight - leverExtendX, leverDepth, leverHeight - leverHeight * 2);
+		Vertex vb6d = new Vertex(-leverHeight - leverExtendX, leverDepth + leverHeight, leverHeight - leverHeight * 2);
+		Vertex vb7d = new Vertex(leverHeight + leverExtendX, leverDepth + leverHeight, leverHeight - leverHeight * 2);
+		Vertex vb8d = new Vertex(leverHeight + leverExtendX, leverDepth, leverHeight - leverHeight * 2);
 
 		/* draw everything */
 		// draw sides
@@ -397,8 +384,7 @@ public class Cockpit {
 		// draw front
 		GL11.glBegin(GL11.GL_POLYGON);
 		// submit normals
-		new Normal(vb6.toVector(), vb1.toVector(), vb2.toVector(),
-				vb7.toVector()).submit();
+		new Normal(vb6.toVector(), vb1.toVector(), vb2.toVector(), vb7.toVector()).submit();
 		// submit vertexes
 		vb4.submit();
 		vb8.submit();
@@ -427,8 +413,7 @@ public class Cockpit {
 		GL11.glPushMatrix();
 		GL11.glTranslatef(hologramBaseX, hologramBaseY, hologramBaseZ);
 		GL11.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-		hologramBase.draw(hologramBaseRadiusTop, hologramBaseRadius,
-				hologramBaseHeight, 24, 24);
+		hologramBase.draw(hologramBaseRadiusTop, hologramBaseRadius, hologramBaseHeight, 24, 24);
 		GL11.glPopMatrix();
 
 		// draw disc
@@ -474,9 +459,9 @@ public class Cockpit {
 		// when in lever charge animation, modify red components ever tick to
 		// create flashing effect
 		if (mode == 'c') {
-			float scale = (float) Math.abs((Math
-					.sin((tick / (chargeTickLimit / (amountOfFlashes)))
-							* Util.rad + (3 * Util.rad / 4)) + 1)) * 0.5f;
+			float scale = (float) Math
+					.abs((Math.sin((tick / (chargeTickLimit / (amountOfFlashes))) * Util.rad + (3 * Util.rad / 4)) + 1))
+					* 0.5f;
 			ambRed = ambRed + scale * (0.5f - ambDefault);
 			difRed = difRed + scale * (0.5f - difDefault);
 		}
@@ -486,10 +471,8 @@ public class Cockpit {
 
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, FloatBuffer.wrap(ambient));
 		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, FloatBuffer.wrap(diffuse));
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR,
-				FloatBuffer.wrap(diffuse));
-		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION,
-				FloatBuffer.wrap(position));
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR, FloatBuffer.wrap(diffuse));
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION, FloatBuffer.wrap(position));
 	}
 
 	/**
@@ -516,22 +499,16 @@ public class Cockpit {
 
 	/* front bar vertexes */
 	// bottom left
-	private Vertex v1 = new Vertex(-frontHeight, -frontWidth + displaceY,
-			frontDist);
+	private Vertex v1 = new Vertex(-frontHeight, -frontWidth + displaceY, frontDist);
 	// top left
-	private Vertex v2 = new Vertex(-frontHeight, frontWidth + displaceY,
-			frontDist);
+	private Vertex v2 = new Vertex(-frontHeight, frontWidth + displaceY, frontDist);
 	// top right
-	private Vertex v3 = new Vertex(frontHeight, frontWidth + displaceY,
-			frontDist);
+	private Vertex v3 = new Vertex(frontHeight, frontWidth + displaceY, frontDist);
 	// bottom right
-	private Vertex v4 = new Vertex(frontHeight, -frontWidth + displaceY,
-			frontDist);
+	private Vertex v4 = new Vertex(frontHeight, -frontWidth + displaceY, frontDist);
 
-	private Vertex v2d = new Vertex(-frontHeight - frontWidth, frontWidth
-			+ displaceY, frontDist - frontWidth2);
-	private Vertex v3d = new Vertex(frontHeight + frontWidth, frontWidth
-			+ displaceY, frontDist - frontWidth2);
+	private Vertex v2d = new Vertex(-frontHeight - frontWidth, frontWidth + displaceY, frontDist - frontWidth2);
+	private Vertex v3d = new Vertex(frontHeight + frontWidth, frontWidth + displaceY, frontDist - frontWidth2);
 
 	/* side bars vertexes */
 	// calculate total x displacement of side bars
@@ -544,16 +521,14 @@ public class Cockpit {
 	// bottom left
 	private Vertex v6 = new Vertex(-bottomTotalX, -frontWidth + bottomTotalY, 0);
 
-	private Vertex v5d = new Vertex(-bottomTotalX - frontWidth2, frontWidth
-			+ bottomTotalY, 0);
+	private Vertex v5d = new Vertex(-bottomTotalX - frontWidth2, frontWidth + bottomTotalY, 0);
 
 	// top right
 	private Vertex v7 = new Vertex(bottomTotalX, frontWidth + bottomTotalY, 0);
 	// bottom right
 	private Vertex v8 = new Vertex(bottomTotalX, -frontWidth + bottomTotalY, 0);
 
-	private Vertex v7d = new Vertex(bottomTotalX + frontWidth2, frontWidth
-			+ bottomTotalY, 0);
+	private Vertex v7d = new Vertex(bottomTotalX + frontWidth2, frontWidth + bottomTotalY, 0);
 
 	/* middle bars vertexes */
 	// calculate total x displacement of middle bars
@@ -565,55 +540,44 @@ public class Cockpit {
 	private float middleTotalZ = middleZMod * frontDist;
 
 	// bottom left inward
-	private Vertex v9 = new Vertex(-frontHeight + frontWidth2, frontWidth
-			+ displaceY, frontDist);
+	private Vertex v9 = new Vertex(-frontHeight + frontWidth2, frontWidth + displaceY, frontDist);
 	// top left inward
-	private Vertex v10 = new Vertex(-middleTotalX + frontWidth2, middleTotalY,
-			middleTotalZ);
+	private Vertex v10 = new Vertex(-middleTotalX + frontWidth2, middleTotalY, middleTotalZ);
 	// top left outward
 	private Vertex v11 = new Vertex(-middleTotalX, middleTotalY, middleTotalZ);
 
-	private Vertex v9d = new Vertex(-frontHeight + frontWidth2, frontWidth
-			+ displaceY, frontDist - frontWidth2);
-	private Vertex v10d = new Vertex(-middleTotalX + frontWidth2, frontWidth
-			+ middleTotalY, middleTotalZ - frontWidth2);
+	private Vertex v9d = new Vertex(-frontHeight + frontWidth2, frontWidth + displaceY, frontDist - frontWidth2);
+	private Vertex v10d = new Vertex(-middleTotalX + frontWidth2, frontWidth + middleTotalY,
+			middleTotalZ - frontWidth2);
 
 	// bottom right inward
-	private Vertex v12 = new Vertex(frontHeight - frontWidth2, frontWidth
-			+ displaceY, frontDist);
+	private Vertex v12 = new Vertex(frontHeight - frontWidth2, frontWidth + displaceY, frontDist);
 	// top right inward
-	private Vertex v13 = new Vertex(middleTotalX - frontWidth2, middleTotalY,
-			middleTotalZ);
+	private Vertex v13 = new Vertex(middleTotalX - frontWidth2, middleTotalY, middleTotalZ);
 	// top right outward
 	private Vertex v14 = new Vertex(middleTotalX, middleTotalY, middleTotalZ);
 
-	private Vertex v12d = new Vertex(frontHeight - frontWidth2, frontWidth
-			+ displaceY, frontDist - frontWidth2);
-	private Vertex v13d = new Vertex(middleTotalX - frontWidth2, frontWidth
-			+ displaceY + middleY + frontWidth, middleTotalZ - frontWidth2);
+	private Vertex v12d = new Vertex(frontHeight - frontWidth2, frontWidth + displaceY, frontDist - frontWidth2);
+	private Vertex v13d = new Vertex(middleTotalX - frontWidth2, frontWidth + displaceY + middleY + frontWidth,
+			middleTotalZ - frontWidth2);
 
 	/* middle-top bars vertexes */
 	// calculate total y displacement of middle bars
 	private float middleTopTotalY = middleTotalY + frontWidth2;
 
 	// left inward
-	private Vertex v15 = new Vertex(-middleTotalX, middleTopTotalY,
-			middleTotalZ);
+	private Vertex v15 = new Vertex(-middleTotalX, middleTopTotalY, middleTotalZ);
 	// left outward
-	private Vertex v16 = new Vertex(-middleTotalX - frontWidth2,
-			middleTopTotalY, middleTotalZ);
+	private Vertex v16 = new Vertex(-middleTotalX - frontWidth2, middleTopTotalY, middleTotalZ);
 
-	private Vertex v15d = new Vertex(-middleTotalX, middleTopTotalY
-			+ frontWidth, middleTotalZ - frontWidth);
+	private Vertex v15d = new Vertex(-middleTotalX, middleTopTotalY + frontWidth, middleTotalZ - frontWidth);
 
 	// right inward
 	private Vertex v17 = new Vertex(middleTotalX, middleTopTotalY, middleTotalZ);
 	// right outward
-	private Vertex v18 = new Vertex(middleTotalX + frontWidth2,
-			middleTopTotalY, middleTotalZ);
+	private Vertex v18 = new Vertex(middleTotalX + frontWidth2, middleTopTotalY, middleTotalZ);
 
-	private Vertex v17d = new Vertex(middleTotalX,
-			middleTopTotalY + frontWidth, middleTotalZ - frontWidth);
+	private Vertex v17d = new Vertex(middleTotalX, middleTopTotalY + frontWidth, middleTotalZ - frontWidth);
 
 	/* top bar vertexes */
 	// calculate total x displacement of top bars
@@ -626,16 +590,14 @@ public class Cockpit {
 	// top left
 	private Vertex v20 = new Vertex(-topTotalX + frontWidth2, topTotalY, 0);
 
-	private Vertex v20d = new Vertex(-topTotalX + frontWidth2, topTotalY
-			+ frontWidth2, 0);
+	private Vertex v20d = new Vertex(-topTotalX + frontWidth2, topTotalY + frontWidth2, 0);
 
 	// bottom right
 	private Vertex v21 = new Vertex(topTotalX, topTotalY, 0);
 	// top right
 	private Vertex v22 = new Vertex(topTotalX - frontWidth2, topTotalY, 0);
 
-	private Vertex v22d = new Vertex(topTotalX - frontWidth2, topTotalY
-			+ frontWidth2, 0);
+	private Vertex v22d = new Vertex(topTotalX - frontWidth2, topTotalY + frontWidth2, 0);
 
 	/* floor vertexes */
 	// calculate total y displacement of floor
@@ -655,65 +617,51 @@ public class Cockpit {
 	private float middleFrontTotalZ = middleFrontZMod * frontDist;
 
 	// bottom left
-	private Vertex v25 = new Vertex(-middleFrontHeight, middleFrontTotalY
-			- frontWidth, middleFrontTotalZ);
+	private Vertex v25 = new Vertex(-middleFrontHeight, middleFrontTotalY - frontWidth, middleFrontTotalZ);
 	// top left
-	private Vertex v26 = new Vertex(-middleFrontHeight, middleFrontTotalY
-			+ frontWidth, middleFrontTotalZ + frontWidth);
+	private Vertex v26 = new Vertex(-middleFrontHeight, middleFrontTotalY + frontWidth, middleFrontTotalZ + frontWidth);
 	// top right
-	private Vertex v27 = new Vertex(middleFrontHeight, middleFrontTotalY
-			+ frontWidth, middleFrontTotalZ + frontWidth);
+	private Vertex v27 = new Vertex(middleFrontHeight, middleFrontTotalY + frontWidth, middleFrontTotalZ + frontWidth);
 	// bottom right
-	private Vertex v28 = new Vertex(middleFrontHeight, middleFrontTotalY
-			- frontWidth, middleFrontTotalZ);
+	private Vertex v28 = new Vertex(middleFrontHeight, middleFrontTotalY - frontWidth, middleFrontTotalZ);
 
-	private Vertex v26d = new Vertex(-middleFrontHeight, middleFrontTotalY
-			+ frontWidth2, middleFrontTotalZ + frontWidth);
-	private Vertex v27d = new Vertex(middleFrontHeight, middleFrontTotalY
-			+ frontWidth2, middleFrontTotalZ + frontWidth);
+	private Vertex v26d = new Vertex(-middleFrontHeight, middleFrontTotalY + frontWidth2,
+			middleFrontTotalZ + frontWidth);
+	private Vertex v27d = new Vertex(middleFrontHeight, middleFrontTotalY + frontWidth2,
+			middleFrontTotalZ + frontWidth);
 
 	/* control board vertexes */
 	// calculate total x displacement of control board
 	private float controlTotalX = bottomXMod * frontHeight * controlMod;
 	// calculate total y displacement of the control board
-	private float controlTotalY = -frontWidth + displaceY - bottomY
-			* controlMod;
+	private float controlTotalY = -frontWidth + displaceY - bottomY * controlMod;
 	// calculate total z displacement of control board
 	private float controlTotalZ = controlMod * frontDist;
 
 	// top left
-	private Vertex v29 = new Vertex(-controlTotalX, controlTotalY,
-			controlTotalZ);
+	private Vertex v29 = new Vertex(-controlTotalX, controlTotalY, controlTotalZ);
 	// bottom left
-	private Vertex v30 = new Vertex(-controlTotalX, controlTotalY - frontWidth2
-			* 2, controlTotalZ);
+	private Vertex v30 = new Vertex(-controlTotalX, controlTotalY - frontWidth2 * 2, controlTotalZ);
 
 	// top right
-	private Vertex v31 = new Vertex(controlTotalX, controlTotalY, frontDist
-			* controlMod);
+	private Vertex v31 = new Vertex(controlTotalX, controlTotalY, frontDist * controlMod);
 	// bottom right
-	private Vertex v32 = new Vertex(controlTotalX, controlTotalY - frontWidth2
-			* 2, controlTotalZ);
+	private Vertex v32 = new Vertex(controlTotalX, controlTotalY - frontWidth2 * 2, controlTotalZ);
 
 	/* lever base bottom vertexes */
 	// calculate total y displacement of the control board
-	private float leverBaseTotalY = -frontWidth + displaceY - bottomY
-			* leverBaseMod;
+	private float leverBaseTotalY = -frontWidth + displaceY - bottomY * leverBaseMod;
 	// calculate total z displacement of control board
 	private float leverBaseTotalZ = leverBaseMod * frontDist;
 
 	// bottom left
-	private Vertex v33 = new Vertex(-leverBaseWidth, leverBaseTotalY,
-			leverBaseTotalZ + leverBaseHeight);
+	private Vertex v33 = new Vertex(-leverBaseWidth, leverBaseTotalY, leverBaseTotalZ + leverBaseHeight);
 	// top left
-	private Vertex v34 = new Vertex(-leverBaseWidth, leverBaseTotalY,
-			leverBaseTotalZ - leverBaseHeight);
+	private Vertex v34 = new Vertex(-leverBaseWidth, leverBaseTotalY, leverBaseTotalZ - leverBaseHeight);
 	// top right
-	private Vertex v35 = new Vertex(leverBaseWidth, leverBaseTotalY,
-			leverBaseTotalZ - leverBaseHeight);
+	private Vertex v35 = new Vertex(leverBaseWidth, leverBaseTotalY, leverBaseTotalZ - leverBaseHeight);
 	// bottom right
-	private Vertex v36 = new Vertex(leverBaseWidth, leverBaseTotalY,
-			leverBaseTotalZ + leverBaseHeight);
+	private Vertex v36 = new Vertex(leverBaseWidth, leverBaseTotalY, leverBaseTotalZ + leverBaseHeight);
 
 	/* lever base top vertexes */
 	// calculate total x displacement for top of lever base
@@ -722,15 +670,11 @@ public class Cockpit {
 	private float leverBaseTopTotalY = leverBaseTotalY + leverBaseDepth;
 
 	// bottom left
-	private Vertex v37 = new Vertex(-leverBaseTopTotalX, leverBaseTopTotalY,
-			leverBaseTotalZ + leverBaseHeight);
+	private Vertex v37 = new Vertex(-leverBaseTopTotalX, leverBaseTopTotalY, leverBaseTotalZ + leverBaseHeight);
 	// top left
-	private Vertex v38 = new Vertex(-leverBaseTopTotalX, leverBaseTopTotalY,
-			leverBaseTotalZ - leverBaseHeight);
+	private Vertex v38 = new Vertex(-leverBaseTopTotalX, leverBaseTopTotalY, leverBaseTotalZ - leverBaseHeight);
 	// top right
-	private Vertex v39 = new Vertex(leverBaseTopTotalX, leverBaseTopTotalY,
-			leverBaseTotalZ - leverBaseHeight);
+	private Vertex v39 = new Vertex(leverBaseTopTotalX, leverBaseTopTotalY, leverBaseTotalZ - leverBaseHeight);
 	// bottom right
-	private Vertex v40 = new Vertex(leverBaseTopTotalX, leverBaseTopTotalY,
-			leverBaseTotalZ + leverBaseHeight);
+	private Vertex v40 = new Vertex(leverBaseTopTotalX, leverBaseTopTotalY, leverBaseTotalZ + leverBaseHeight);
 }

@@ -1,11 +1,33 @@
-/* SpaceHermit
- * <desc>
- * dd/mm/yyyy
+/* Space Hermit
+ * Alone in space with a FTL drive.
+ * 07/12/2017
  * 
  * Scene Graph:
  *  Scene origin
  *  |
- *  +-- 
+ *  +-- [] Background
+ *  |
+ *  +-- [] Cockpit
+ *  |	|
+ *  |	+-- [] Frame
+ *  |	|
+ *  |	+-- [] Floor
+ *  |	|
+ *  |	+-- [] Control board
+ *  |	|	|
+ *  |	|	+-- [T(0, -12.5, 0.5 * cos(PI*tick / tickLimit)) Rx(35 * cos(PI*tick / tickLimit))] Lever
+ *  |	|
+ *  |	+-- [] Hologram base
+ *  |		|
+ *  |		+-- [T(-7.5, -11, 36)] Hologram
+ *  |			|
+ *  |			+-- [T(0, -0.875, 0)] Light cone
+ *  |			|
+ *  |			+-- [Ry(360 * tick/30)] Earth
+ *  |				|
+ *  |				+-- [Ry(360 * tick/5) T(2, sin(2PI*(tick/4) / 5), 0) Ry(360 * tick/10)] Moon
+ *  |
+ *  +-- [] Fade screen
  */
 package SpaceHermit;
 
@@ -24,15 +46,21 @@ import GraphicsLab.Vertex;
 /**
  * My projects simulates being inside of a space jet.
  * 
- * Features: - The scene "bobs" the cockpit in the x, y and z axis in a natural
+ * Features:
+ * - The scene "bobs" the cockpit in the x, y and z axis in a natural
  * way with the use of sinusoidal movement to create a feeling of floating in
- * space. - A very nice looking cockpit front. - Translucent, almost-holographic
- * depictions of the Earth and Moon occupying the cockpit. - The moon orbits the
+ * space.
+ * - A very nice looking cockpit front.
+ * - Translucent, almost-holographic depictions of the Earth and Moon occupying
+ * the cockpit. 
+ * - The moon orbits the
  * Earth, with sinusoidal bumps in the y axis to simulate natural fluctuations
- * of an orbit. - A lever that animates forward and backwards, using sinusoidal
- * movement to simulate a "resistance" effect when pushing. - You can push the
- * lever and start the warp protocol. The shaking and ambience exemplifies, with
- * the scene fading to a pure white as you travel accross the universe.
+ * of an orbit.
+ * - A lever that animates forward and backwards, using sinusoidal
+ * movement to simulate a "resistance" effect when pushing.
+ * - You can push the lever and start the warp protocol. The shaking and
+ * ambience exemplifies, with the scene fading to a pure white as you travel
+ * across the universe.
  * 
  * <p>
  * Controls:
