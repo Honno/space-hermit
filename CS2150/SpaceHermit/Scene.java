@@ -57,7 +57,7 @@ import GraphicsLab.Vertex;
  * natural fluctuations of an orbit.
  * - A lever that animates forward and backwards, using sinusoidal
  * movement to simulate a "resistance" effect when pushing.
- * - You can push the lever and start the warp protocol.
+ * - You can push the lever and start the warp protocol (space bar).
  * - Lighting flashes red when lever is being pushed.
  * - When lever is fully pushed, the shaking, pov and ambience exemplifies, with the 
  * scene fading to a pure white as you travel across the universe.
