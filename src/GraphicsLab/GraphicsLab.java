@@ -3,9 +3,6 @@
  * 23/08/2007
  */
 package GraphicsLab;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;

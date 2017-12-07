@@ -19,7 +19,7 @@ import GraphicsLab.Vertex;
  * Contains useful functions used across the package.
  */
 public class Util {
-	public static String pckgDir = "coursework/barberm1";
+	public static String pckgDir = "src/coursework/barberm1";
 	public static double rad = 2 * Math.PI;
 
 	/**

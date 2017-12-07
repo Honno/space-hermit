@@ -444,7 +444,7 @@ public class Scene extends GraphicsLab {
 	 */
 	private void tick() {
 		// reset tick after half a minute to ensure it's not too large for calculations
-		if(tick > 30.0f) {
+		if(tick > 10.0f) {
 			tick = 0.0f;
 		}
 		

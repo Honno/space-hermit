@@ -36,7 +36,7 @@ public class Hologram {
 	/* declare flicker animation variables */
 	private boolean flicker = false;
 	private int constantFlickers = 16;
-	private int exponentialFlickers = 6;
+	private int exponentialFlickers = 2;
 	private float shortTime = 0.03125f;
 	private float nextTime = shortTime;
 	private int counter = 1;
