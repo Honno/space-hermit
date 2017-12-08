@@ -5,29 +5,29 @@
  * Scene Graph:
  *  Scene origin
  *  |
- *  +-- [] Background
+ *  +-- Background
  *  |
- *  +-- [] Cockpit
- *  |	|
- *  |	+-- [] Frame
- *  |	|
- *  |	+-- [] Floor
- *  |	|
- *  |	+-- [] Control board
- *  |	|	|
- *  |	|	+-- [T(0, -12.5, 0.5 * cos(PI*tick / tickLimit)) Rx(35 * cos(PI*tick / tickLimit))] Lever
- *  |	|
- *  |	+-- [] Hologram base
+ *  +-- [T(sin(2PI*xTick / period) * ampMax, sin(2PI*yTick / period) * ampMax, sin(2PI*zTick / period) * ampMax)] Cockpit
  *  |		|
- *  |		+-- [T(-7.5, -11, 36)] Hologram
+ *  |		+-- Frame
+ *  |		|
+ *  |		+-- Floor
+ *  |		|
+ *  |		+-- Control board
+ *  |		|	|
+ *  |		|	+-- [T(0, -12.5, 0.5 * cos(PI*tick / tickLimit)) Rx(35 * cos(PI*tick / tickLimit))] Lever
+ *  |		|
+ *  |		+-- Hologram base
  *  |			|
- *  |			+-- [T(0, -0.875, 0)] Light cone
- *  |			|
- *  |			+-- [Ry(360 * tick/30)] Earth
+ *  |			+-- [T(-7.5, -11, 36)] Hologram
  *  |				|
- *  |				+-- [Ry(360 * tick/5) T(2, sin(2PI*(tick/4) / 5), 0) Ry(360 * tick/10)] Moon
+ *  |				+-- [T(0, -0.875, 0)] Light cone
+ *  |				|
+ *  |				+-- [Ry(360 * tick/30)] Earth
+ *  |					|
+ *  |					+-- [Ry(360 * tick/5) T(2, sin(2PI*(tick/4) / 5), 0) Ry(360 * tick/10)] Moon
  *  |
- *  +-- [] Fade screen
+ *  +-- Fade screen
  */
 package coursework.barberm1;
 
@@ -47,20 +47,15 @@ import GraphicsLab.Vertex;
  * My projects simulates being inside of a space jet.
  * 
  * Features:
- * - The scene "bobs" the cockpit in the x, y and z axis in a natural
- * way with the use of sinusoidal movement to create a feeling of floating in
- * space.
+ * - The scene "bobs" the cockpit in the x, y and z axis.
  * - A very nice looking cockpit front.
- * - Translucent, almost-holographic depictions of the Earth and Moon occupying
- * the cockpit. 
- * - The moon orbits the Earth, with sinusoidal bumps in the y axis to simulate
- * natural fluctuations of an orbit.
- * - A lever that animates forward and backwards, using sinusoidal
- * movement to simulate a "resistance" effect when pushing.
+ * - Translucent, almost-holographic depictions of the Earth and Moon.
+ * - The moon orbits the Earth with bumps.
+ * - A lever that animates forward and backwards.
  * - You can push the lever and start the warp protocol (space bar).
  * - Lighting flashes red when lever is being pushed.
- * - When lever is fully pushed, the shaking, pov and ambience exemplifies, with the 
- * scene fading to a pure white as you travel across the universe.
+ * - When lever is fully pushed, the shaking, pov and ambience exemplifies and the 
+ * scene fades.
  * - When the warp has finished, the scene fades in again and the hologram flickers
  * for a while before it stabilises.
  * 
