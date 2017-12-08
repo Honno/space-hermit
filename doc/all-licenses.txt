@@ -1,0 +1,27 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: *
+Copyright: 2017, Matthew Barber <quitesimplymatt@gmail.com>
+License: CC BY-4.0
+
+Files: src/coursework/barberm1/textures/earth.png, src/coursework/barberm1/textures/earth.xcf, src/coursework/barberm1/textures/moon.png, src/coursework/barberm1/textures/moon.xcf
+Copyright: 2017, Matthew Barber <quitesimplymatt@gmail.com>
+License: CC BY-4.0
+Comment:
+  Textures modified from JHT's Planet Pixel Emporium (under Public Domain):
+  http://planetpixelemporium.com/earth.html
+
+Files: src/coursework/barberm1/textures/corona_ft.png, src/coursework/barberm1/textures/redeclipse_ft.png
+Copyright: 2011-2013, Ulukai <jonathan.denil@gmail.com>
+License: CC-BY-SA-3.0
+ 
+Files: src/coursework/barberm1/textures/unnamedspace_ft.jpg, src/coursework/barberm1/textures/unnamedspace3_ft.jpg
+Copyright: 2011-2013, Ulukai <jonathan.denil@gmail.com>
+License: CC BY-SA-3.0
+
+Files: src/GraphicsLab/*
+Copyright: Anthony Jones, Dan Cornford
+License: CC BY-NC 3.0
+Comment:
+  Authors modified the files from lwjgl tutorial files provided by Mark Bernard:
+  http://nehe.gamedev.net/
