@@ -1,4 +1,5 @@
-bin/
-LWJGL/
-src/coursework/barberm1/textures/earth.xcf
-src/coursework/barberm1/textures/moon.xcf
+*.xcf
+*.class
+doc
+bin
+LWJGL
