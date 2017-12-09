@@ -1,5 +1,13 @@
+.metadata
+bin/
+tmp/
+doc/
 *.xcf
-*.class
-doc
-bin
-LWJGL
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
