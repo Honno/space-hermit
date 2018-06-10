@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 
 Files: *
 Copyright: 2017, Matthew Barber <quitesimplymatt@gmail.com>
-License: CC BY-4.0
+License: MIT
 
 Files: src/coursework/barberm1/textures/earth.png, src/coursework/barberm1/textures/earth.xcf, src/coursework/barberm1/textures/moon.png, src/coursework/barberm1/textures/moon.xcf
 Copyright: 2017, Matthew Barber <quitesimplymatt@gmail.com>
@@ -14,9 +14,9 @@ Comment:
 Files: src/coursework/barberm1/textures/corona_ft.png, src/coursework/barberm1/textures/redeclipse_ft.png
 Copyright: 2011-2013, Ulukai <jonathan.denil@gmail.com>
 License: CC-BY-SA-3.0
- 
+
 Files: src/coursework/barberm1/textures/unnamedspace_ft.jpg, src/coursework/barberm1/textures/unnamedspace3_ft.jpg
-Copyright: 2011-2013, Ulukai <jonathan.denil@gmail.com>
+Copyright: 2011-2013, Unnamed <Viktor.Hahn@web.de>
 License: CC BY-SA-3.0
 
 Files: src/GraphicsLab/*
