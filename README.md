@@ -1,6 +1,6 @@
 # Space Hermit
 
-![Going faster than light](/doc/hermit.gif)
+[*See gif*](/doc/hermit.gif)
 
 This is my submission for the 2nd year graphics module in my CS degree. We were tasked to create a scene using LWJGL/OpenGL with the theme of "space" which demonstrated your learning in lectures and labs. I decided to simulate the experience of warp travel inside a cockpit.
 
