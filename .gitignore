@@ -1,7 +1,6 @@
 .metadata
 bin/
 tmp/
-doc/
 *.xcf
 *.tmp
 *.bak
